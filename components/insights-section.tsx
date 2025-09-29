@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Users,
   BarChart3,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -78,14 +79,25 @@ export function InsightsSection() {
   return (
     <section
       id="insights"
-      className="py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900"
+      className="py-20 bg-gradient-to-b from-background to-muted/30 relative overflow-hidden"
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(246,210,7,0.03),transparent_50%)]"></div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Enhanced Header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-slate-900 dark:text-white">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">
+            <Target className="h-4 w-4 text-accent-foreground" />
+            <span className="text-sm font-semibold text-accent-foreground uppercase tracking-wide">
+              Data-Driven Intelligence
+            </span>
+          </div>
+
+          <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-foreground font-[family-name:var(--font-jost)]">
             Latest Insights
           </h2>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto text-pretty">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
             Stay informed with our cutting-edge research and analysis on African
             political and economic trends, backed by rigorous data collection
             and expert interpretation.
@@ -93,37 +105,38 @@ export function InsightsSection() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
+          {/* Enhanced Insights Cards - Retaining original structure */}
           <div className="lg:col-span-2 space-y-6">
             {insights.map((insight) => {
               const IconComponent = insight.icon;
               return (
                 <Card
                   key={insight.id}
-                  className={`group hover:shadow-xl transition-all duration-300 border-l-4 ${insight.borderColor} bg-gradient-to-r ${insight.color} hover:scale-[1.02]`}
+                  className={`group hover:shadow-xl transition-all duration-300 border-l-4 ${insight.borderColor} bg-gradient-to-r ${insight.color} hover:scale-[1.02] bg-card/80 backdrop-blur-sm`}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
-                        <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
+                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
                           <span>{insight.date}</span>
                           <span>•</span>
                           <IconComponent className="h-4 w-4" />
-                          <span className="text-slate-700 dark:text-slate-300 font-medium">
+                          <span className="text-foreground font-medium">
                             {insight.type}
                           </span>
                         </div>
-                        <CardTitle className="text-xl text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <CardTitle className="text-xl text-foreground group-hover:text-accent transition-colors font-[family-name:var(--font-jost)]">
                           {insight.title}
                         </CardTitle>
                       </div>
                       {insight.featured && (
-                        <div className="px-3 py-1 bg-yellow-500 text-white text-xs font-medium rounded-full shadow-sm">
+                        <div className="px-3 py-1 bg-accent/20 text-accent-foreground text-xs font-medium rounded-full border border-accent/30">
                           Featured
                         </div>
                       )}
                     </div>
-                    <CardDescription className="text-base leading-relaxed text-slate-700 dark:text-slate-300">
+                    <CardDescription className="text-base leading-relaxed text-muted-foreground">
                       {insight.description}
                     </CardDescription>
                   </CardHeader>
@@ -135,7 +148,7 @@ export function InsightsSection() {
                           toast.info("Download feature is not available yet.");
                         }}
                         size="sm"
-                        className="border-blue-500 cursor-pointer text-blue-600 hover:bg-blue-500 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white"
+                        className="border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Download PDF
@@ -144,7 +157,7 @@ export function InsightsSection() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-slate-700 cursor-pointer hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                          className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Read More
@@ -157,13 +170,15 @@ export function InsightsSection() {
             })}
           </div>
 
+          {/* Enhanced Sidebar - Retaining original sizes */}
           <div className="space-y-6">
-            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg">
+            {/* Enhanced Economic Indicators Card */}
+            <Card className="bg-card border-border/50 shadow-lg backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg text-slate-900 dark:text-white">
+                <CardTitle className="text-lg text-foreground font-[family-name:var(--font-jost)]">
                   Economic Indicators
                 </CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-400">
+                <CardDescription className="text-muted-foreground">
                   GDP Growth vs Inflation Trends
                 </CardDescription>
               </CardHeader>
@@ -175,19 +190,19 @@ export function InsightsSection() {
                         dataKey="month"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: "#64748b" }}
+                        tick={{ fill: "currentColor" }}
                       />
                       <YAxis
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: "#64748b" }}
+                        tick={{ fill: "currentColor" }}
                       />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: "#1e293b",
-                          border: "none",
+                          backgroundColor: "hsl(var(--background))",
+                          border: "1px solid hsl(var(--border))",
                           borderRadius: "8px",
-                          color: "#f8fafc",
+                          color: "hsl(var(--foreground))",
                         }}
                       />
                       <Line
@@ -207,7 +222,7 @@ export function InsightsSection() {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex items-center justify-between mt-4 text-sm text-slate-700 dark:text-slate-300">
+                <div className="flex items-center justify-between mt-4 text-sm text-foreground">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
                     <span>GDP Growth (%)</span>
@@ -220,9 +235,10 @@ export function InsightsSection() {
               </CardContent>
             </Card>
 
+            {/* Subscribe Card - Retaining original blue color scheme */}
             <Card className="bg-gradient-to-br from-blue-500 to-cyan-500 border-0 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-lg text-white">
+                <CardTitle className="text-lg text-white font-[family-name:var(--font-jost)]">
                   Subscribe to Updates
                 </CardTitle>
                 <CardDescription className="text-blue-100">
@@ -234,12 +250,33 @@ export function InsightsSection() {
                   onClick={() => {
                     toast.info("Subscribe feature is not available yet.");
                   }}
-                  className="w-full cursor-pointer bg-white hover:bg-slate-100 text-blue-600 font-semibold"
+                  className="w-full cursor-pointer bg-white hover:bg-slate-100 text-blue-600 font-semibold transition-colors"
                 >
                   Subscribe Now
                 </Button>
               </CardContent>
             </Card>
+          </div>
+        </div>
+
+        {/* Enhanced CTA Section */}
+        <div className="text-center">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-6 bg-background/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-lg">
+            <div className="text-left">
+              <h3 className="text-xl font-bold text-foreground mb-2 font-[family-name:var(--font-jost)]">
+                Need Custom Research?
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                Commission tailored research and analysis specific to your
+                organizational needs.
+              </p>
+            </div>
+            <Button
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 py-4 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+            >
+              Contact Our Team
+            </Button>
           </div>
         </div>
       </div>

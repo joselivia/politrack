@@ -54,7 +54,7 @@ const companyLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-slate-900 to-slate-950 border-t border-slate-800">
+    <footer className="bg-gradient-to-b from-black to-slate-900 border-t border-slate-800">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Main Footer Content */}
         <div className="grid lg:grid-cols-5 gap-8 mb-12">
@@ -178,7 +178,7 @@ export function Footer() {
                 <div>
                   <div className="text-white text-sm font-medium">Email</div>
                   <div className="text-slate-400 text-sm">
-                    insights@politrack.africa
+                    insights@politrackafrica.co.ke
                   </div>
                 </div>
               </div>

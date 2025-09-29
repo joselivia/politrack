@@ -1,17 +1,47 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Playfair_Display } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export const metadata: Metadata = {
-  title: "Politrack Africa",
+  title: "Politrack Africa | Data-Driven Political Insights",
   description: "Politrack Africa: Where Numbers Meet Narrative",
+  keywords: ["Political Insights", "Data-Driven", "Africa"],
+  manifest: "/favicons/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicons/favicon.ico", sizes: "any" },
+    ],
+    apple: [{ url: "/favicons/apple-touch-icon.png" }],
+    other: [
+      {
+        rel: "android-chrome",
+        url: "/favicons/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        rel: "android-chrome",
+        url: "/favicons/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "msapplication-TileColor": "#ffffff",
+    "msapplication-config": "/favicons/browserconfig.xml",
+    "theme-color": "#ffffff",
+  },
 };
 
-const playfair = Playfair_Display({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -22,7 +52,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${playfair.variable}`}>
+      <head>
+        <link rel="manifest" href="/favicons/site.webmanifest" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff" />
+      </head>
+      <body className={`font-sans ${inter.variable}`}>
         {children}
         {/* make toasts smaller */}
         <ToastContainer
