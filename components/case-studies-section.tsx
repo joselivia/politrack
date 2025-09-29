@@ -130,7 +130,7 @@ export function CaseStudiesSection() {
 
                 <Button
                   variant="outline"
-                  className="w-full group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-colors text-foreground border-border bg-transparent"
+                  className="w-full cursor-pointer group-hover:bg-accent group-hover:text-accent-foreground group-hover:border-accent transition-colors text-foreground border-border bg-transparent"
                 >
                   Read Full Case Study
                   <ArrowRight className="h-4 w-4 ml-2" />
@@ -143,7 +143,7 @@ export function CaseStudiesSection() {
         <div className="text-center mt-12">
           <Button
             size="lg"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+            className="bg-accent cursor-not-allowed hover:bg-accent/90 text-accent-foreground"
           >
             View All Case Studies
             <ArrowRight className="h-4 w-4 ml-2" />
