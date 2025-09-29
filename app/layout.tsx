@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Footerpage from "@/components/Footer";
-import ToastCard from "@/components/toastNotification";
-
+import { Playfair_Display } from "next/font/google";
 
 export const metadata: Metadata = {
   title: "Politrack Africa",
   description: "Politrack Africa: Where Numbers Meet Narrative",
 };
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
@@ -16,9 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body><ToastCard />
+      <body className={`font-sans ${playfair.variable}`}>
         {children}
-        <Footerpage />
       </body>
     </html>
   );
