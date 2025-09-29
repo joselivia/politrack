@@ -24,6 +24,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 const economicData = [
   { month: "Jan", growth: 2.1, inflation: 8.5 },
@@ -130,8 +131,11 @@ export function InsightsSection() {
                     <div className="flex items-center space-x-4">
                       <Button
                         variant="outline"
+                        onClick={() => {
+                          toast.info("Download feature is not available yet.");
+                        }}
                         size="sm"
-                        className="border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white"
+                        className="border-blue-500 cursor-pointer text-blue-600 hover:bg-blue-500 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white"
                       >
                         <Download className="h-4 w-4 mr-2" />
                         Download PDF
@@ -140,7 +144,7 @@ export function InsightsSection() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                          className="text-slate-700 cursor-pointer hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Read More
@@ -226,7 +230,12 @@ export function InsightsSection() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full bg-white hover:bg-slate-100 text-blue-600 font-semibold">
+                <Button
+                  onClick={() => {
+                    toast.info("Subscribe feature is not available yet.");
+                  }}
+                  className="w-full cursor-pointer bg-white hover:bg-slate-100 text-blue-600 font-semibold"
+                >
                   Subscribe Now
                 </Button>
               </CardContent>

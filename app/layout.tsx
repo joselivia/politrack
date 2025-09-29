@@ -24,7 +24,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${playfair.variable}`}>
         {children}
-        <ToastContainer />
+        {/* make toasts smaller */}
+        <ToastContainer
+          toastClassName="text-sm"
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+        />
       </body>
     </html>
   );

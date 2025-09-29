@@ -14,6 +14,7 @@ import Link from "next/link";
 import { insightsContent } from "@/content/insights-content";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { toast } from "react-toastify";
 
 interface PageProps {
   params: {
@@ -73,11 +74,19 @@ export default function InsightPage({ params }: PageProps) {
 
             {/* Download Button */}
             <div className="flex items-center space-x-4 mb-12">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3">
+              <Button
+                onClick={() => {
+                  toast.info("Download feature is not available yet.");
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+              >
                 <Download className="h-5 w-5 mr-2" />
                 Download Full Report (PDF)
               </Button>
               <Button
+                onClick={() => {
+                  toast.info("Share feature is not available yet.");
+                }}
                 variant="outline"
                 className="border-slate-300 text-slate-700 dark:border-slate-600 dark:text-slate-300"
               >
@@ -186,7 +195,12 @@ export default function InsightPage({ params }: PageProps) {
                   <p className="text-blue-100 text-sm mb-4">
                     Get similar insights delivered to your inbox
                   </p>
-                  <Button className="w-full bg-white hover:bg-slate-100 text-blue-600 text-sm">
+                  <Button
+                    onClick={() => {
+                      toast.info("Subscribe feature is not available yet.");
+                    }}
+                    className="w-full cursor-pointer bg-white hover:bg-slate-100 text-blue-600 text-sm"
+                  >
                     Subscribe Now
                   </Button>
                 </CardContent>

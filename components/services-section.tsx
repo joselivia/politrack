@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const services = [
   {
@@ -280,7 +281,7 @@ export function ServicesSection() {
 
         {/* Call to Action */}
         <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl p-8 shadow-xl">
+          <div className="bg-gradient-to-r border-2 border-black  from-yellow-500 to-amber-500 rounded-2xl p-8 shadow-xl">
             <h3 className="text-2xl font-bold text-white mb-4">
               Ready to Transform Your Strategy?
             </h3>
@@ -288,7 +289,12 @@ export function ServicesSection() {
               Partner with us to leverage data-driven insights for your
               political or business objectives across African markets.
             </p>
-            <button className="bg-white text-yellow-600 hover:bg-slate-100 font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg">
+            <button
+              onClick={() => {
+                toast.info("Get Started feature is not available yet.");
+              }}
+              className="bg-white border-1 border-black  text-yellow-600 hover:bg-slate-100 font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg"
+            >
               Get Started Today
             </button>
           </div>

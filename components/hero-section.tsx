@@ -32,7 +32,7 @@ const regionData = [
 
 export function HeroSection() {
   return (
-    <section className="relative py-24 lg:py-40 overflow-hidden bg-gradient-to-br from-muted/50 via-background to-muted/30">
+    <section className="relative py-16 lg:py-28 overflow-hidden bg-gradient-to-br from-muted/50 via-background to-muted/30">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(246,210,7,0.08),transparent_50%)]"></div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
