@@ -1,8 +1,7 @@
+"use client";
 
-"use client"
-
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   BarChart,
   Bar,
@@ -12,14 +11,8 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts"
-import {
-  TrendingUp,
-  Users,
-  Globe,
-  BarChart3,
-  ArrowRight,
-} from "lucide-react"
+} from "recharts";
+import { TrendingUp, Users, Globe, BarChart3, ArrowRight } from "lucide-react";
 
 const pollData = [
   { name: "Jan", value: 65 },
@@ -28,19 +21,19 @@ const pollData = [
   { name: "Apr", value: 75 },
   { name: "May", value: 82 },
   { name: "Jun", value: 78 },
-]
+];
 
 const regionData = [
-  { name: "East Africa", value: 35, color: "hsl(var(--chart-1))" },
-  { name: "West Africa", value: 30, color: "hsl(var(--chart-2))" },
-  { name: "Southern Africa", value: 20, color: "hsl(var(--chart-3))" },
-  { name: "Central Africa", value: 15, color: "hsl(var(--chart-4))" },
-]
+  { name: "East Africa", value: 35, color: "#F6D207" },
+  { name: "West Africa", value: 30, color: "#000000" },
+  { name: "Southern Africa", value: 20, color: "#4B5563" },
+  { name: "Central Africa", value: 15, color: "#9CA3AF" },
+];
 
 export function HeroSection() {
   return (
-    <section className="relative py-24 lg:py-40 overflow-hidden bg-gradient-to-br from-primary/10 via-white to-secondary/5">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent_50%)]"></div>
+    <section className="relative py-24 lg:py-40 overflow-hidden bg-gradient-to-br from-muted/50 via-background to-muted/30">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(246,210,7,0.08),transparent_50%)]"></div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -49,7 +42,7 @@ export function HeroSection() {
             <div className="space-y-6">
               <h1 className="text-5xl lg:text-7xl font-black text-balance leading-tight">
                 Decoding Africa&apos;s
-                <span className="text-primary block">Pulse</span>
+                <span className="text-foreground block">Pulse</span>
               </h1>
               <p className="text-xl lg:text-2xl text-muted-foreground font-medium text-pretty">
                 Data-Driven Insights for Political &amp; Socio-Economic Strategy
@@ -63,14 +56,17 @@ export function HeroSection() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="text-lg px-8 py-4 bg-primary hover:bg-primary/90 font-semibold">
+              <Button
+                size="lg"
+                className="text-lg px-8 py-4 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+              >
                 Download Free Report
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="text-lg px-8 py-4 border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold bg-transparent"
+                className="text-lg px-8 py-4 border-2 border-primary text-foreground hover:bg-primary hover:text-primary-foreground font-semibold bg-transparent"
               >
                 Get In Touch
               </Button>
@@ -80,8 +76,8 @@ export function HeroSection() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 pt-12">
               <div className="text-center">
                 <div className="flex justify-center mb-3">
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    <Globe className="h-8 w-8 text-primary" />
+                  <div className="p-3 bg-accent/20 rounded-xl">
+                    <Globe className="h-8 w-8 text-accent-foreground" />
                   </div>
                 </div>
                 <div className="text-3xl font-black text-foreground">25+</div>
@@ -91,8 +87,8 @@ export function HeroSection() {
               </div>
               <div className="text-center">
                 <div className="flex justify-center mb-3">
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    <Users className="h-8 w-8 text-primary" />
+                  <div className="p-3 bg-accent/20 rounded-xl">
+                    <Users className="h-8 w-8 text-accent-foreground" />
                   </div>
                 </div>
                 <div className="text-3xl font-black text-foreground">90%</div>
@@ -102,8 +98,8 @@ export function HeroSection() {
               </div>
               <div className="text-center">
                 <div className="flex justify-center mb-3">
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    <BarChart3 className="h-8 w-8 text-primary" />
+                  <div className="p-3 bg-accent/20 rounded-xl">
+                    <BarChart3 className="h-8 w-8 text-accent-foreground" />
                   </div>
                 </div>
                 <div className="text-3xl font-black text-foreground">7/7</div>
@@ -113,8 +109,8 @@ export function HeroSection() {
               </div>
               <div className="text-center">
                 <div className="flex justify-center mb-3">
-                  <div className="p-3 bg-secondary/10 rounded-xl">
-                    <TrendingUp className="h-8 w-8 text-secondary" />
+                  <div className="p-3 bg-accent/20 rounded-xl">
+                    <TrendingUp className="h-8 w-8 text-accent-foreground" />
                   </div>
                 </div>
                 <div className="text-3xl font-black text-foreground">92%</div>
@@ -127,10 +123,12 @@ export function HeroSection() {
 
           {/* Right Side */}
           <div className="space-y-6">
-            <Card className="p-8 border-2 border-primary/10 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="p-8 border border-border shadow-lg hover:shadow-xl transition-shadow bg-card">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold">Youth Economic Priorities</h3>
-                <div className="flex items-center text-sm font-semibold text-secondary bg-secondary/10 px-3 py-1 rounded-full">
+                <h3 className="text-xl font-bold text-foreground">
+                  Youth Economic Priorities
+                </h3>
+                <div className="flex items-center text-sm font-semibold text-accent-foreground bg-accent/20 px-3 py-1 rounded-full">
                   <TrendingUp className="h-4 w-4 mr-1" />
                   78% prioritize economy
                 </div>
@@ -140,14 +138,16 @@ export function HeroSection() {
                   <BarChart data={pollData}>
                     <XAxis dataKey="name" axisLine={false} tickLine={false} />
                     <YAxis axisLine={false} tickLine={false} />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="value" fill="#F6D207" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </Card>
 
-            <Card className="p-8 border-2 border-primary/10 shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-bold mb-6">Regional Coverage</h3>
+            <Card className="p-8 border border-border shadow-lg hover:shadow-xl transition-shadow bg-card">
+              <h3 className="text-xl font-bold text-foreground mb-6">
+                Regional Coverage
+              </h3>
               <div className="flex items-center space-x-8">
                 <div className="h-36 w-36">
                   <ResponsiveContainer width="100%" height="100%">
@@ -177,7 +177,9 @@ export function HeroSection() {
                       <span className="text-sm font-medium text-muted-foreground">
                         {item.name}
                       </span>
-                      <span className="text-sm font-bold">{item.value}%</span>
+                      <span className="text-sm font-bold text-foreground">
+                        {item.value}%
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -187,5 +189,5 @@ export function HeroSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
