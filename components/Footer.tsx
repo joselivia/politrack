@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Phone, MapPin, Linkedin, Twitter, Globe } from "lucide-react";
@@ -143,7 +142,7 @@ export function Footer() {
                       alt="Office Location Flag"
                       width={40}
                       height={40}
-                      className="h-5 w-auto sm:h-6 w-auto object-contain"
+                      className="h-5  sm:h-6 w-auto object-contain"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
