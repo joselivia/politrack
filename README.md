@@ -247,7 +247,7 @@ This project is private and proprietary to Politrack Africa. All rights reserved
 
 - **Email**: insights@politrackafrica.co.ke
 - **Phone**: +254 700 123 456
-- **Website**: [politrack.africa](https://politrack.africa)
+- **Website**: [politrackafrica.co.ke](https://politrackafrica.co.ke)
 - **Repository**: [github.com/joselivia/politrack](https://github.com/joselivia/politrack)
 - **Issues**: Report bugs and feature requests via GitHub Issues
 
