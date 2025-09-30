@@ -53,7 +53,7 @@ const companyLinks = [
   "Contact Us",
 ];
 
-export function Footer() {
+export default function Footer() {
   return (
     <footer className="bg-gradient-to-b from-black to-slate-900 border-t border-slate-800">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">

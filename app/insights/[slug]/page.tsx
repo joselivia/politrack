@@ -12,13 +12,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { insightsContent } from "@/content/insights-content";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { toast } from "react-toastify";
-
-interface InsightPageProps {
-  params: { slug: string }; 
-}
 
 export async function generateStaticParams() {
   return insightsContent.map((insight) => ({
@@ -26,7 +22,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function InsightPage({ params }: InsightPageProps) {
+export default function InsightPage({ params }: any) {
   const insight = insightsContent.find((insight) => insight.id === params.slug);
 
   if (!insight) {

@@ -1,9 +1,10 @@
+"use client";
+
 // app/not-found.tsx
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import Header from "@/components/header";
 import {
   ArrowLeft,
   Search,
@@ -12,6 +13,7 @@ import {
   Users,
   FileText,
 } from "lucide-react";
+import Footer from "@/components/footer";
 
 export default function NotFound() {
   const popularInsights = [

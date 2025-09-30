@@ -75,7 +75,7 @@ const insights = [
   },
 ];
 
-export function InsightsSection() {
+export default function InsightsSection() {
   const handleDownloadClick = (insightTitle: string) => {
     toast.info(`Download feature for "${insightTitle}" is not available yet.`);
   };

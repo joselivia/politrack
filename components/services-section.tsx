@@ -136,7 +136,7 @@ const services = [
   },
 ];
 
-export function ServicesSection() {
+export default function ServicesSection() {
   const [openDialog, setOpenDialog] = useState<string | null>(null);
 
   return (

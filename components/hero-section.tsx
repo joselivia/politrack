@@ -53,7 +53,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function HeroSection() {
+export default function HeroSection() {
   return (
     <section className="relative py-8 sm:py-12 lg:py-14 xl:py-24 overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Enhanced background elements */}
