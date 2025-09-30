@@ -1,4 +1,4 @@
-"use client";
+import React from "react";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,13 +16,17 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { toast } from "react-toastify";
 
-interface PageProps {
-  params: {
-    slug: string;
-  };
+interface InsightPageProps {
+  params: { slug: string }; 
 }
 
-export default function InsightPage({ params }: PageProps) {
+export async function generateStaticParams() {
+  return insightsContent.map((insight) => ({
+    slug: insight.id,
+  }));
+}
+
+export default function InsightPage({ params }: InsightPageProps) {
   const insight = insightsContent.find((insight) => insight.id === params.slug);
 
   if (!insight) {
@@ -36,7 +40,6 @@ export default function InsightPage({ params }: PageProps) {
       <Header />
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 py-4">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back Button */}
           <Link href="/#insights">
             <Button
               variant="ghost"
@@ -47,7 +50,6 @@ export default function InsightPage({ params }: PageProps) {
             </Button>
           </Link>
 
-          {/* Header */}
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
               <Calendar className="h-4 w-4" />
@@ -72,7 +74,6 @@ export default function InsightPage({ params }: PageProps) {
               {insight.description}
             </p>
 
-            {/* Download Button */}
             <div className="flex items-center space-x-4 mb-12">
               <Button
                 onClick={() => {
@@ -95,9 +96,7 @@ export default function InsightPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Content */}
           <div className="max-w-full mx-auto grid lg:grid-cols-4 gap-8">
-            {/* Main Content */}
             <div className="lg:col-span-3 space-y-8">
               {insight.content.sections.map((section, index) => (
                 <Card
@@ -122,7 +121,6 @@ export default function InsightPage({ params }: PageProps) {
                 </Card>
               ))}
 
-              {/* Key Findings */}
               <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30">
                 <CardContent className="p-8">
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
@@ -143,7 +141,6 @@ export default function InsightPage({ params }: PageProps) {
               </Card>
             </div>
 
-            {/* Sidebar */}
             <div className="space-y-6">
               <Card className="border-slate-200 dark:border-slate-700">
                 <CardContent className="p-6">
