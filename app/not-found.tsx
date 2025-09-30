@@ -42,7 +42,7 @@ export default function NotFound() {
   ];
 
   return (
-    <>
+    <div>
       <Header />
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 pt-20 pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -199,6 +199,6 @@ export default function NotFound() {
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }

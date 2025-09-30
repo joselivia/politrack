@@ -1,34 +1,15 @@
+"use client";
+
 import React from "react";
-import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Download,
-  Calendar,
-  Users,
-  BarChart3,
-  TrendingUp,
-  ArrowLeft,
-} from "lucide-react";
+import { Download, Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { insightsContent } from "@/content/insights-content";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { toast } from "react-toastify";
 
-export async function generateStaticParams() {
-  return insightsContent.map((insight) => ({
-    slug: insight.id,
-  }));
-}
-
-export default function InsightPage({ params }: any) {
-  const insight = insightsContent.find((insight) => insight.id === params.slug);
-
-  if (!insight) {
-    notFound();
-  }
-
+export default function InsightPageClient({ insight }: any) {
   const IconComponent = insight.icon;
 
   return (
@@ -94,7 +75,7 @@ export default function InsightPage({ params }: any) {
 
           <div className="max-w-full mx-auto grid lg:grid-cols-4 gap-8">
             <div className="lg:col-span-3 space-y-8">
-              {insight.content.sections.map((section, index) => (
+              {insight.content.sections.map((section: any, index: any) => (
                 <Card
                   key={index}
                   className="border-slate-200 dark:border-slate-700 shadow-sm"
@@ -104,7 +85,7 @@ export default function InsightPage({ params }: any) {
                       {section.title}
                     </h2>
                     <div className="prose prose-slate dark:prose-invert max-w-none">
-                      {section.content.map((paragraph, pIndex) => (
+                      {section.content.map((paragraph: any, pIndex: any) => (
                         <p
                           key={pIndex}
                           className="text-slate-700 dark:text-slate-300 mb-4 leading-relaxed"
@@ -123,15 +104,17 @@ export default function InsightPage({ params }: any) {
                     Key Findings
                   </h3>
                   <ul className="space-y-3">
-                    {insight.content.keyFindings.map((finding, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start space-x-3 text-slate-700 dark:text-slate-300"
-                      >
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                        <span>{finding}</span>
-                      </li>
-                    ))}
+                    {insight.content.keyFindings.map(
+                      (finding: any, index: any) => (
+                        <li
+                          key={index}
+                          className="flex items-start space-x-3 text-slate-700 dark:text-slate-300"
+                        >
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                          <span>{finding}</span>
+                        </li>
+                      )
+                    )}
                   </ul>
                 </CardContent>
               </Card>
