@@ -76,37 +76,57 @@ const insights = [
 ];
 
 export function InsightsSection() {
+  const handleDownloadClick = (insightTitle: string) => {
+    toast.info(`Download feature for "${insightTitle}" is not available yet.`);
+  };
+
+  const handleSubscribeClick = () => {
+    toast.info("Subscribe feature is not available yet.");
+  };
+
+  const handleContactTeamClick = () => {
+    // You can replace this with actual contact logic
+    console.log("Contact team clicked");
+    toast.info("Contact feature to be implemented soon!");
+  };
+
+  const handleReadMoreClick = (insightId: string) => {
+    // You can replace this with actual navigation logic
+    console.log(`Navigating to insight: ${insightId}`);
+    toast.info(`Reading more about: ${insightId}`);
+  };
+
   return (
     <section
       id="insights"
-      className="py-20 bg-gradient-to-b from-background to-muted/30 relative overflow-hidden"
+      className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-background to-muted/30 relative overflow-hidden"
     >
       {/* Background Elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(246,210,7,0.03),transparent_50%)]"></div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Enhanced Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">
-            <Target className="h-4 w-4 text-accent-foreground" />
-            <span className="text-sm font-semibold text-accent-foreground uppercase tracking-wide">
+        <div className="text-center mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20 mb-4 sm:mb-6">
+            <Target className="h-3 w-3 sm:h-4 sm:w-4 text-accent-foreground" />
+            <span className="text-xs sm:text-sm font-semibold text-accent-foreground uppercase tracking-wide">
               Data-Driven Intelligence
             </span>
           </div>
 
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-foreground font-[family-name:var(--font-jost)]">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 text-foreground font-[family-name:var(--font-jost)]">
             Latest Insights
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto text-pretty px-2 sm:px-0">
             Stay informed with our cutting-edge research and analysis on African
             political and economic trends, backed by rigorous data collection
             and expert interpretation.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-12">
-          {/* Enhanced Insights Cards - Retaining original structure */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
+          {/* Enhanced Insights Cards */}
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {insights.map((insight) => {
               const IconComponent = insight.icon;
               return (
@@ -114,55 +134,52 @@ export function InsightsSection() {
                   key={insight.id}
                   className={`group hover:shadow-xl transition-all duration-300 border-l-4 ${insight.borderColor} bg-gradient-to-r ${insight.color} hover:scale-[1.02] bg-card/80 backdrop-blur-sm`}
                 >
-                  <CardHeader>
+                  <CardHeader className="p-4 sm:p-6">
                     <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
+                      <div className="space-y-2 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                           <span>{insight.date}</span>
                           <span>•</span>
-                          <IconComponent className="h-4 w-4" />
+                          <IconComponent className="h-3 w-3 sm:h-4 sm:w-4" />
                           <span className="text-foreground font-medium">
                             {insight.type}
                           </span>
                         </div>
-                        <CardTitle className="text-xl text-foreground group-hover:text-accent transition-colors font-[family-name:var(--font-jost)]">
+                        <CardTitle className="text-lg sm:text-xl text-foreground group-hover:text-accent transition-colors font-[family-name:var(--font-jost)] leading-tight">
                           {insight.title}
                         </CardTitle>
                       </div>
                       {insight.featured && (
-                        <div className="px-3 py-1 bg-accent/20 text-accent-foreground text-xs font-medium rounded-full border border-accent/30">
+                        <div className="px-2 sm:px-3 py-1 bg-accent/20 text-accent-foreground text-xs font-medium rounded-full border border-accent/30 ml-2 flex-shrink-0">
                           Featured
                         </div>
                       )}
                     </div>
-                    <CardDescription className="text-base leading-relaxed text-muted-foreground">
+                    <CardDescription className="text-sm sm:text-base leading-relaxed text-muted-foreground mt-2">
                       {insight.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-4">
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                       <Button
                         variant="outline"
-                        onClick={() => {
-                          toast.info("Download feature is not available yet.");
-                        }}
+                        onClick={() => handleDownloadClick(insight.title)}
                         size="sm"
-                        className="border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                        className="border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer w-full sm:w-auto"
                       >
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Download PDF
                       </Button>
-                      <Link href={`/insights/${insight.id}`}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Read More
-                        </Button>
-                      </Link>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleReadMoreClick(insight.id)}
+                        size="sm"
+                        className="text-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer w-full sm:w-auto"
+                      >
+                        <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                        Read More
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -170,32 +187,32 @@ export function InsightsSection() {
             })}
           </div>
 
-          {/* Enhanced Sidebar - Retaining original sizes */}
-          <div className="space-y-6">
+          {/* Enhanced Sidebar */}
+          <div className="space-y-4 sm:space-y-6">
             {/* Enhanced Economic Indicators Card */}
             <Card className="bg-card border-border/50 shadow-lg backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-lg text-foreground font-[family-name:var(--font-jost)]">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg text-foreground font-[family-name:var(--font-jost)]">
                   Economic Indicators
                 </CardTitle>
-                <CardDescription className="text-muted-foreground">
+                <CardDescription className="text-muted-foreground text-sm sm:text-base">
                   GDP Growth vs Inflation Trends
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-48">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="h-40 sm:h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={economicData}>
                       <XAxis
                         dataKey="month"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: "currentColor" }}
+                        tick={{ fill: "currentColor", fontSize: 12 }}
                       />
                       <YAxis
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: "currentColor" }}
+                        tick={{ fill: "currentColor", fontSize: 12 }}
                       />
                       <Tooltip
                         contentStyle={{
@@ -203,54 +220,53 @@ export function InsightsSection() {
                           border: "1px solid hsl(var(--border))",
                           borderRadius: "8px",
                           color: "hsl(var(--foreground))",
+                          fontSize: "12px",
                         }}
                       />
                       <Line
                         type="monotone"
                         dataKey="growth"
                         stroke="#3b82f6"
-                        strokeWidth={3}
-                        dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                        strokeWidth={2}
+                        dot={{ fill: "#3b82f6", strokeWidth: 2, r: 3 }}
                       />
                       <Line
                         type="monotone"
                         dataKey="inflation"
                         stroke="#ef4444"
-                        strokeWidth={3}
-                        dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
+                        strokeWidth={2}
+                        dot={{ fill: "#ef4444", strokeWidth: 2, r: 3 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex items-center justify-between mt-4 text-sm text-foreground">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mt-3 sm:mt-4 text-xs sm:text-sm text-foreground">
                   <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500 mr-2"></div>
                     <span>GDP Growth (%)</span>
                   </div>
                   <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                    <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500 mr-2"></div>
                     <span>Inflation Rate (%)</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Subscribe Card - Retaining original blue color scheme */}
+            {/* Subscribe Card */}
             <Card className="bg-gradient-to-br from-blue-500 to-cyan-500 border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-lg text-white font-[family-name:var(--font-jost)]">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg text-white font-[family-name:var(--font-jost)]">
                   Subscribe to Updates
                 </CardTitle>
-                <CardDescription className="text-blue-100">
+                <CardDescription className="text-blue-100 text-sm sm:text-base">
                   Get the latest insights delivered to your inbox monthly
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <Button
-                  onClick={() => {
-                    toast.info("Subscribe feature is not available yet.");
-                  }}
-                  className="w-full cursor-pointer bg-white hover:bg-slate-100 text-blue-600 font-semibold transition-colors"
+                  onClick={handleSubscribeClick}
+                  className="w-full cursor-pointer bg-white hover:bg-slate-100 text-blue-600 font-semibold transition-colors text-sm sm:text-base py-2 sm:py-3"
                 >
                   Subscribe Now
                 </Button>
@@ -261,19 +277,20 @@ export function InsightsSection() {
 
         {/* Enhanced CTA Section */}
         <div className="text-center">
-          <div className="inline-flex flex-col sm:flex-row items-center gap-6 bg-background/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-lg">
-            <div className="text-left">
-              <h3 className="text-xl font-bold text-foreground mb-2 font-[family-name:var(--font-jost)]">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-background/80 backdrop-blur-sm border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg w-full max-w-4xl">
+            <div className="text-center sm:text-left">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2 font-[family-name:var(--font-jost)]">
                 Need Custom Research?
               </h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 Commission tailored research and analysis specific to your
                 organizational needs.
               </p>
             </div>
             <Button
+              onClick={handleContactTeamClick}
               size="lg"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-6 py-4 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-4 sm:px-6 py-3 sm:py-4 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap w-full sm:w-auto text-sm sm:text-base"
             >
               Contact Our Team
             </Button>

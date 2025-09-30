@@ -22,6 +22,9 @@ import {
   TrendingUp,
   CheckCircle,
   X,
+  Download,
+  FileText,
+  ArrowRight,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -139,27 +142,27 @@ export function ServicesSection() {
   return (
     <section
       id="services"
-      className="py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900"
+      className="py-16 sm:py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-slate-900 dark:text-white">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-slate-900 dark:text-white">
             Our Services
           </h2>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto text-pretty">
+          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto text-pretty leading-relaxed">
             Comprehensive research and advisory services designed to navigate
             Africa's complex political and economic landscape with precision and
             cultural sensitivity.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
           {services.map((service, index) => (
             <Card
               key={index}
-              className={`group hover:shadow-xl transition-all duration-300 border-l-4 ${service.borderColor} bg-gradient-to-br ${service.gradient} hover:scale-105 hover:shadow-2xl cursor-pointer`}
+              className={`group hover:shadow-xl transition-all duration-300 border-l-4 ${service.borderColor} bg-gradient-to-br ${service.gradient} hover:scale-105 hover:shadow-2xl cursor-pointer h-full flex flex-col`}
             >
-              <CardHeader className="text-center pb-4 space-y-4">
+              <CardHeader className="text-center pb-4 space-y-4 flex-1">
                 <div
                   className={`mx-auto p-4 rounded-2xl ${service.iconBg} group-hover:scale-110 transition-transform duration-300`}
                 >
@@ -175,7 +178,7 @@ export function ServicesSection() {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <ul className="space-y-3">
+                <ul className="space-y-3 mb-6">
                   {service.features.map((feature, featureIndex) => (
                     <li
                       key={featureIndex}
@@ -186,106 +189,18 @@ export function ServicesSection() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className="w-full text-sm cursor-pointer font-semibold text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 transition-colors group-hover:underline">
-                        Learn More →
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-                      <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center space-x-4 mb-4">
-                          <div
-                            className={`p-3 rounded-xl ${service.iconBg} flex-shrink-0`}
-                          >
-                            <service.icon
-                              className={`h-8 w-8 ${service.iconColor}`}
-                              aria-hidden="true"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white truncate">
-                              {service.title}
-                            </DialogTitle>
-                          </div>
-                        </div>
-                        <DialogDescription className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                          {service.detailedDescription}
-                        </DialogDescription>
-                      </DialogHeader>
-
-                      <div className="flex-1 w-full overflow-y-auto px-6 py-4 ">
-                        <div className="grid md:grid-cols-2 gap-8">
-                          <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
-                              <CheckCircle className="h-5 w-5 text-yellow-500 mr-3 flex-shrink-0" />
-                              Key Features
-                            </h3>
-                            <ul className="space-y-3">
-                              {service.features
-                                .concat(service.additionalFeatures)
-                                .map((feature, idx) => (
-                                  <li
-                                    key={idx}
-                                    className="flex items-start text-slate-700 dark:text-slate-300"
-                                  >
-                                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                                    <span className="leading-relaxed">
-                                      {feature}
-                                    </span>
-                                  </li>
-                                ))}
-                            </ul>
-                          </div>
-
-                          <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
-                              <Target className="h-5 w-5 text-yellow-500 mr-3 flex-shrink-0" />
-                              Ideal For
-                            </h3>
-                            <ul className="space-y-3">
-                              {service.useCases.map((useCase, idx) => (
-                                <li
-                                  key={idx}
-                                  className="flex items-start text-slate-700 dark:text-slate-300"
-                                >
-                                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                                  <span className="leading-relaxed">
-                                    {useCase}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <button className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
-                            Request Proposal
-                          </button>
-                          <button className="flex-1 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
-                            Download Brochure
-                          </button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-gradient-to-r border-2 border-black  from-yellow-500 to-amber-500 rounded-2xl p-8 shadow-xl">
-            <h3 className="text-2xl font-bold text-white mb-4">
+        <div className="text-center mt-12 sm:mt-16">
+          <div className="bg-gradient-to-r from-yellow-500 to-amber-500 rounded-2xl p-6 sm:p-8 shadow-xl border border-yellow-600/20">
+            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">
               Ready to Transform Your Strategy?
             </h3>
-            <p className="text-yellow-100 mb-6 max-w-2xl mx-auto">
+            <p className="text-yellow-100 mb-6 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
               Partner with us to leverage data-driven insights for your
               political or business objectives across African markets.
             </p>
@@ -293,7 +208,7 @@ export function ServicesSection() {
               onClick={() => {
                 toast.info("Get Started feature is not available yet.");
               }}
-              className="bg-white border-1 border-black  text-yellow-600 hover:bg-slate-100 font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg"
+              className="bg-white text-yellow-600 hover:bg-slate-100 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Get Started Today
             </button>

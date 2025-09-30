@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
@@ -87,62 +89,62 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="py-24 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900"
+      className="py-12 sm:py-16 lg:py-24 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 mb-6">
-            <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <div className="inline-flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 mb-4 sm:mb-6">
+            <span className="text-xs sm:text-sm font-semibold text-yellow-700 dark:text-yellow-400">
               Trusted Across Africa
             </span>
           </div>
-          <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6 max-w-4xl mx-auto leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6 max-w-4xl mx-auto leading-tight">
             African Insights, By Africans,{" "}
             <span className="bg-gradient-to-r from-yellow-500 to-amber-500 bg-clip-text text-transparent">
               For Africa
             </span>
           </h2>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
             Our mission is to amplify Africa's voices through rigorous, ethical
             research that drives informed decision-making and democratic
             progress across the continent.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-start">
           {/* Left Content */}
-          <div className="space-y-12">
+          <div className="space-y-8 sm:space-y-12">
             {/* Core Values */}
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="w-2 h-6 sm:h-8 bg-yellow-500 rounded-full"></div>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                   Why Choose Politrack?
                 </h3>
               </div>
 
-              <div className="grid gap-6">
+              <div className="grid gap-4 sm:gap-6">
                 {highlights.map((highlight, index) => {
                   const IconComponent = highlight.icon;
                   return (
                     <div
                       key={index}
-                      className="group p-6 rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                      className="group p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
                     >
-                      <div className="flex items-start space-x-4">
+                      <div className="flex items-start space-x-3 sm:space-x-4">
                         <div
-                          className={`p-3 rounded-xl bg-gradient-to-br ${highlight.gradient} group-hover:scale-110 transition-transform duration-300`}
+                          className={`p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br ${highlight.gradient} group-hover:scale-110 transition-transform duration-300`}
                         >
                           <IconComponent
-                            className={`h-6 w-6 ${highlight.color}`}
+                            className={`h-5 w-5 sm:h-6 sm:w-6 ${highlight.color}`}
                           />
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                          <h4 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-1 sm:mb-2">
                             {highlight.title}
                           </h4>
-                          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
                             {highlight.description}
                           </p>
                         </div>
@@ -154,27 +156,27 @@ export function AboutSection() {
             </div>
 
             {/* Certifications */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex items-center space-x-3">
-                <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <div className="w-2 h-6 sm:h-8 bg-yellow-500 rounded-full"></div>
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                   Quality Assurance
                 </h3>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {certifications.map((cert, index) => {
                   const IconComponent = cert.icon;
                   return (
                     <div
                       key={index}
-                      className="group p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-yellow-500/50 hover:shadow-lg transition-all duration-300"
+                      className="group p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-yellow-500/50 hover:shadow-lg transition-all duration-300"
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-lg bg-yellow-500/10">
-                          <IconComponent className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <div className="p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-yellow-500/10">
+                          <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 dark:text-yellow-400" />
                         </div>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
                           {cert.name}
                         </span>
                       </div>
@@ -186,9 +188,9 @@ export function AboutSection() {
           </div>
 
           {/* Right Content - Stats & Quote */}
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Stats Cards */}
-            <div className="grid gap-6">
+            <div className="grid gap-4 sm:gap-6">
               {stats.map((stat, index) => {
                 const IconComponent = stat.icon;
                 return (
@@ -196,29 +198,29 @@ export function AboutSection() {
                     key={index}
                     className="group border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
                   >
-                    <CardContent className="p-8">
+                    <CardContent className="p-4 sm:p-6 lg:p-8">
                       <div className="flex items-start justify-between">
-                        <div className="space-y-4">
-                          <div className="flex items-center space-x-3">
+                        <div className="space-y-3 sm:space-y-4">
+                          <div className="flex items-center space-x-2 sm:space-x-3">
                             <div
-                              className={`p-3 rounded-xl bg-gradient-to-br ${stat.gradient}`}
+                              className={`p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br ${stat.gradient}`}
                             >
-                              <IconComponent className="h-6 w-6 text-white" />
+                              <IconComponent className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                             </div>
                             <div>
-                              <div className="text-3xl font-bold text-slate-900 dark:text-white">
+                              <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
                                 {stat.value}
                               </div>
-                              <div className="text-lg font-semibold text-slate-700 dark:text-slate-300">
+                              <div className="text-base sm:text-lg font-semibold text-slate-700 dark:text-slate-300">
                                 {stat.label}
                               </div>
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <p className="text-slate-600 dark:text-slate-400 text-sm">
+                          <div className="space-y-1 sm:space-y-2">
+                            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                               {stat.description}
                             </p>
-                            <p className="text-slate-500 dark:text-slate-500 text-xs">
+                            <p className="text-xs text-slate-500 dark:text-slate-500">
                               {stat.footnote}
                             </p>
                           </div>
@@ -232,24 +234,24 @@ export function AboutSection() {
 
             {/* Testimonial Quote */}
             <Card className="border-0 bg-gradient-to-br from-slate-900 to-slate-800 shadow-2xl">
-              <CardContent className="p-8">
-                <div className="text-center space-y-6">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/20">
-                    <span className="text-2xl">"</span>
+              <CardContent className="p-4 sm:p-6 lg:p-8">
+                <div className="text-center space-y-4 sm:space-y-6">
+                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-yellow-500/20">
+                    <span className="text-xl sm:text-2xl">"</span>
                   </div>
                   <blockquote>
-                    <p className="text-lg italic text-slate-200 leading-relaxed mb-6">
+                    <p className="text-sm sm:text-base lg:text-lg italic text-slate-200 leading-relaxed mb-4 sm:mb-6">
                       "In a continent of diverse voices and rapid change, we
                       turn nuanced public sentiment into actionable
                       intelligence. Trust alone is not enough; Africa's future
                       needs confidence built on rigorous, locally-grounded
                       research."
                     </p>
-                    <footer className="space-y-2">
-                      <div className="font-semibold text-white">
+                    <footer className="space-y-1 sm:space-y-2">
+                      <div className="font-semibold text-white text-sm sm:text-base">
                         Politrack Africa Research Team
                       </div>
-                      <div className="text-sm text-slate-300">
+                      <div className="text-xs sm:text-sm text-slate-300">
                         Leading African Insights Since 2020
                       </div>
                     </footer>
@@ -260,11 +262,11 @@ export function AboutSection() {
 
             {/* CTA Badge */}
             <div className="text-center">
-              <div className="inline-flex items-center px-6 py-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors shadow-lg cursor-pointer">
-                <span className="text-sm font-semibold text-white mr-3">
+              <div className="inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors shadow-lg cursor-pointer">
+                <span className="text-xs sm:text-sm font-semibold text-white mr-2 sm:mr-3">
                   Explore Our Methodology
                 </span>
-                <ArrowRight className="h-4 w-4 text-white" />
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
               </div>
             </div>
           </div>
@@ -273,5 +275,3 @@ export function AboutSection() {
     </section>
   );
 }
-
-// Add this import at the top with other Lucide icons
