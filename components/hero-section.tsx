@@ -57,7 +57,13 @@ interface ChartData {
   count?: number;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) =>
+  fetch(url).then((res) => {
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    return res.json();
+  });
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -113,21 +119,23 @@ export default function HeroSection() {
     error,
     isLoading,
     mutate,
-  } = useSWR<PollData[]>(
-    `${baseURL}/api/aspirant/published`,
-    fetcher,
-    { refreshInterval: 5000 } // Update every 5 seconds
-  );
+  } = useSWR<PollData[]>(`${baseURL}/api/aspirant/published`, fetcher, {
+    refreshInterval: 5000, // Update every 5 seconds
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
 
   // Process data for charts when polls data changes
   useEffect(() => {
-    if (pollsData) {
+    if (pollsData && Array.isArray(pollsData)) {
       setLastUpdated(new Date());
 
       // Process region data for pie chart
       const regionCount: { [key: string]: number } = {};
       pollsData.forEach((poll) => {
-        regionCount[poll.region] = (regionCount[poll.region] || 0) + 1;
+        if (poll.region) {
+          regionCount[poll.region] = (regionCount[poll.region] || 0) + 1;
+        }
       });
 
       const colors = [
@@ -149,12 +157,16 @@ export default function HeroSection() {
       );
 
       setRegionData(processedRegionData);
+    } else if (pollsData && !Array.isArray(pollsData)) {
+      // Handle case where API returns non-array data
+      console.error("Expected array but got:", typeof pollsData);
+      setRegionData([]);
     }
   }, [pollsData]);
 
   // Process data for active polls bar chart
   const getActivePollsData = (): ChartData[] => {
-    if (!pollsData) return [];
+    if (!pollsData || !Array.isArray(pollsData)) return [];
 
     // Last 6 months (with year to avoid clashes like Jan 2024 vs Jan 2025)
     const last6Months = Array.from({ length: 6 }, (_, i) => {
@@ -168,9 +180,14 @@ export default function HeroSection() {
 
     // Count polls per month
     const monthCounts = last6Months.map(({ key }) => {
-      return pollsData.filter((poll: any) => {
-        const d = new Date(poll.created_at);
-        return `${d.getFullYear()}-${d.getMonth()}` === key;
+      return pollsData.filter((poll: PollData) => {
+        if (!poll.created_at) return false;
+        try {
+          const d = new Date(poll.created_at);
+          return `${d.getFullYear()}-${d.getMonth()}` === key;
+        } catch {
+          return false;
+        }
       }).length;
     });
 
@@ -189,37 +206,62 @@ export default function HeroSection() {
   };
 
   const activePollsData = getActivePollsData();
-  const totalActivePolls = pollsData?.length || 0;
+  const totalActivePolls =
+    pollsData && Array.isArray(pollsData) ? pollsData.length : 0;
   const totalVotes =
-    pollsData?.reduce((sum, poll) => sum + poll.total_votes, 0) || 0;
+    pollsData && Array.isArray(pollsData)
+      ? pollsData.reduce((sum, poll) => sum + (poll.total_votes || 0), 0)
+      : 0;
   const spoiledVotes =
-    pollsData?.reduce((sum, poll) => sum + (poll.spoiled_votes || 0), 0) || 0;
+    pollsData && Array.isArray(pollsData)
+      ? pollsData.reduce((sum, poll) => sum + (poll.spoiled_votes || 0), 0)
+      : 0;
   const validVotes = totalVotes - spoiledVotes;
 
   // Countdown for nearest expiring poll
   const getNearestCountdown = () => {
-    if (!pollsData || pollsData.length === 0) return "No active polls";
+    if (!pollsData || !Array.isArray(pollsData) || pollsData.length === 0)
+      return "No active polls";
 
     const now = new Date();
-    const activePolls = pollsData.filter(
-      (poll) => new Date(poll.voting_expires_at) > now
-    );
+    const activePolls = pollsData.filter((poll) => {
+      if (!poll.voting_expires_at) return false;
+      try {
+        return new Date(poll.voting_expires_at) > now;
+      } catch {
+        return false;
+      }
+    });
 
     if (activePolls.length === 0) return "All polls closed";
 
-    const nearest = activePolls.reduce((prev, current) =>
-      new Date(prev.voting_expires_at) < new Date(current.voting_expires_at)
-        ? prev
-        : current
-    );
+    const nearest = activePolls.reduce((prev, current) => {
+      try {
+        const prevDate = new Date(prev.voting_expires_at);
+        const currentDate = new Date(current.voting_expires_at);
+        return prevDate < currentDate ? prev : current;
+      } catch {
+        return prev;
+      }
+    });
 
-    const diff = new Date(nearest.voting_expires_at).getTime() - now.getTime();
-    if (diff <= 0) return "Closing soon";
+    try {
+      const diff =
+        new Date(nearest.voting_expires_at).getTime() - now.getTime();
+      if (diff <= 0) return "Closing soon";
 
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    return `${hours}h ${minutes}m`;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      return `${hours}h ${minutes}m`;
+    } catch {
+      return "Invalid date";
+    }
   };
+
+  // Handle API errors gracefully
+  if (error) {
+    console.error("API Error:", error);
+  }
 
   return (
     <section className="relative py-8 sm:py-12 lg:py-14 xl:py-24 overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
@@ -293,6 +335,17 @@ export default function HeroSection() {
             {/* Enhanced Stats Section */}
             {isLoading ? (
               <StatsSkeleton />
+            ) : error ? (
+              <div className="text-center py-8 text-destructive">
+                <p>Failed to load data. Please try again.</p>
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => mutate()}
+                >
+                  Retry
+                </Button>
+              </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-6 sm:pt-8">
                 {[
@@ -368,8 +421,16 @@ export default function HeroSection() {
                 </div>
               </div>
               <div className="h-48 sm:h-56">
-                {isLoading || !pollsData ? (
+                {isLoading ? (
                   <ChartLoading message="Loading poll trends..." />
+                ) : error ? (
+                  <div className="flex items-center justify-center h-full text-destructive">
+                    Failed to load chart data
+                  </div>
+                ) : !pollsData || !Array.isArray(pollsData) ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No data available
+                  </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -419,8 +480,18 @@ export default function HeroSection() {
               </div>
               <div className="flex flex-col lg:flex-row items-center justify-between space-y-6 lg:space-y-0">
                 <div className="h-40 w-40 sm:h-48 sm:w-48">
-                  {isLoading || !pollsData ? (
+                  {isLoading ? (
                     <ChartLoading message="Loading regions..." />
+                  ) : error ? (
+                    <div className="flex items-center justify-center h-full text-destructive">
+                      Failed to load data
+                    </div>
+                  ) : !pollsData ||
+                    !Array.isArray(pollsData) ||
+                    regionData.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      No regional data
+                    </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -458,7 +529,7 @@ export default function HeroSection() {
                   )}
                 </div>
                 <div className="space-y-3 sm:space-y-4 flex-1 lg:pl-4 xl:pl-8 w-full">
-                  {isLoading || !pollsData ? (
+                  {isLoading ? (
                     <div className="space-y-3">
                       {Array.from({ length: 4 }).map((_, index) => (
                         <div
@@ -475,6 +546,13 @@ export default function HeroSection() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  ) : error ||
+                    !pollsData ||
+                    !Array.isArray(pollsData) ||
+                    regionData.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      No regional data available
                     </div>
                   ) : (
                     regionData.map((item, index) => (
