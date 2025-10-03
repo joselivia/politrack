@@ -63,7 +63,6 @@ export default function RootLayout({
         <Header />
         {children}
         <Footer />
-        {/* make toasts smaller */}
         <ToastContainer
           toastClassName="text-sm"
           position="bottom-right"

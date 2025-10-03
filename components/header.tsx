@@ -3,17 +3,24 @@
 import { Button } from "@/components/ui/button";
 import { Menu, Radio, X } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleNavClick = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    // If we're not on the home page, navigate to home first with hash
+    if (pathname !== "/") {
+      router.push(`/#${sectionId}`);
+    } else {
+      // If we're already on home page, scroll to section
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
     setIsMobileMenuOpen(false);
   };
@@ -22,6 +29,11 @@ export default function Header() {
     // You can replace this with your actual get started logic
     console.log("Get Started clicked");
     // Example: scroll to contact section or open a modal
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleLivePollsClick = () => {
+    router.push("/polls");
     setIsMobileMenuOpen(false);
   };
 
@@ -42,44 +54,44 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8">
             <button
-              onClick={() => router.push("/polls")}
-              className="text-sm lg:text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-2 px-1"
+              onClick={handleLivePollsClick}
+              className="flex items-center text-sm lg:text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap"
             >
-              <span className="animate-pulse">
-                <Radio className="w-4 h-4 inline-block mr-1" />
+              <span className="flex items-center">
+                <Radio className="w-4 h-4 inline-block mr-1 text-green-500 animate-pulse" />
+                Live Polls
               </span>
-              Live Polls
             </button>
             <button
               onClick={() => handleNavClick("services")}
-              className="text-sm lg:text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-2 px-1"
+              className="text-sm lg:text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap"
             >
               Services
             </button>
             <button
               onClick={() => handleNavClick("insights")}
-              className="text-sm lg:text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-2 px-1"
+              className="text-sm lg:text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap"
             >
               Insights
             </button>
             <button
               onClick={() => handleNavClick("case-studies")}
-              className="text-sm lg:text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-2 px-1"
+              className="text-sm lg:text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap"
             >
               Case Studies
             </button>
             <button
               onClick={() => handleNavClick("about")}
-              className="text-sm lg:text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-2 px-1"
+              className="text-sm lg:text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap"
             >
               About
             </button>
             <Button
               onClick={handleGetStartedClick}
               size="lg"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-4 lg:px-6 text-sm lg:text-base"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-4 lg:px-6 text-sm lg:text-base whitespace-nowrap"
             >
               Get Started
             </Button>
@@ -89,7 +101,7 @@ export default function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden text-foreground h-9 w-9"
+            className="md:hidden text-foreground cursor-pointer h-9 w-9"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -105,26 +117,33 @@ export default function Header() {
           <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border shadow-lg">
             <nav className="container mx-auto px-4 sm:px-6 py-4 space-y-3">
               <button
+                onClick={handleLivePollsClick}
+                className="w-full flex items-center text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
+              >
+                <Radio className="w-4 h-4 inline-block mr-2 text-green-500 animate-pulse" />
+                Live Polls
+              </button>
+              <button
                 onClick={() => handleNavClick("services")}
-                className="w-full text-left text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
+                className="w-full text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
               >
                 Services
               </button>
               <button
                 onClick={() => handleNavClick("insights")}
-                className="w-full text-left text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
+                className="w-full text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
               >
                 Insights
               </button>
               <button
                 onClick={() => handleNavClick("case-studies")}
-                className="w-full text-left text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
+                className="w-full text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
               >
                 Case Studies
               </button>
               <button
                 onClick={() => handleNavClick("about")}
-                className="w-full text-left text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
+                className="w-full text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
               >
                 About
               </button>
