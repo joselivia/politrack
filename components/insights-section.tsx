@@ -91,9 +91,8 @@ export default function InsightsSection() {
   };
 
   const handleReadMoreClick = (insightId: string) => {
-    // You can replace this with actual navigation logic
-    console.log(`Navigating to insight: ${insightId}`);
-    toast.info(`Reading more about: ${insightId}`);
+    // navigate to .insights/[slug]
+    window.location.href = `/insights/${insightId}`;
   };
 
   return (

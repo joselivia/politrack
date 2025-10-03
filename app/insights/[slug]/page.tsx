@@ -10,7 +10,7 @@ import Footer from "@/components/footer";
 import { toast } from "react-toastify";
 
 export default function InsightPageClient({ insight }: any) {
-  const IconComponent = insight.icon;
+  const IconComponent = insight?.icon;
 
   return (
     <>
@@ -30,13 +30,13 @@ export default function InsightPageClient({ insight }: any) {
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
               <Calendar className="h-4 w-4" />
-              <span>{insight.date}</span>
+              <span>{insight?.date}</span>
               <span>•</span>
               <IconComponent className="h-4 w-4" />
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                {insight.type}
+                {insight?.type}
               </span>
-              {insight.featured && (
+              {insight?.featured && (
                 <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-medium rounded-full">
                   Featured
                 </span>
@@ -44,11 +44,11 @@ export default function InsightPageClient({ insight }: any) {
             </div>
 
             <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6">
-              {insight.title}
+              {insight?.title}
             </h1>
 
             <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-              {insight.description}
+              {insight?.description}
             </p>
 
             <div className="flex items-center space-x-4 mb-12">
@@ -75,7 +75,7 @@ export default function InsightPageClient({ insight }: any) {
 
           <div className="max-w-full mx-auto grid lg:grid-cols-4 gap-8">
             <div className="lg:col-span-3 space-y-8">
-              {insight.content.sections.map((section: any, index: any) => (
+              {insight?.content.sections.map((section: any, index: any) => (
                 <Card
                   key={index}
                   className="border-slate-200 dark:border-slate-700 shadow-sm"
@@ -104,7 +104,7 @@ export default function InsightPageClient({ insight }: any) {
                     Key Findings
                   </h3>
                   <ul className="space-y-3">
-                    {insight.content.keyFindings.map(
+                    {insight?.content.keyFindings.map(
                       (finding: any, index: any) => (
                         <li
                           key={index}
@@ -132,7 +132,7 @@ export default function InsightPageClient({ insight }: any) {
                         Publication Date
                       </dt>
                       <dd className="text-slate-900 dark:text-white font-medium">
-                        {insight.date}
+                        {insight?.date}
                       </dd>
                     </div>
                     <div>
@@ -140,7 +140,7 @@ export default function InsightPageClient({ insight }: any) {
                         Category
                       </dt>
                       <dd className="text-slate-900 dark:text-white font-medium">
-                        {insight.type}
+                        {insight?.type}
                       </dd>
                     </div>
                     <div>
@@ -148,7 +148,7 @@ export default function InsightPageClient({ insight }: any) {
                         Pages
                       </dt>
                       <dd className="text-slate-900 dark:text-white font-medium">
-                        {insight.content.pages}
+                        {insight?.content.pages}
                       </dd>
                     </div>
                     <div>
@@ -156,7 +156,7 @@ export default function InsightPageClient({ insight }: any) {
                         Language
                       </dt>
                       <dd className="text-slate-900 dark:text-white font-medium">
-                        {insight.content.language}
+                        {insight?.content.language}
                       </dd>
                     </div>
                   </dl>
