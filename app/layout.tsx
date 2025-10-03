@@ -3,6 +3,8 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Politrack Africa | Data-Driven Political Insights",
@@ -58,7 +60,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className={`font-sans ${inter.variable}`}>
+        <Header />
         {children}
+        <Footer />
         {/* make toasts smaller */}
         <ToastContainer
           toastClassName="text-sm"

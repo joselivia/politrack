@@ -12,15 +12,12 @@ import Footer from "@/components/footer";
 export default function Home() {
   return (
     <main>
-      <Header />
       <HeroSection />
       <ServicesSection />
       <InsightsSection />
       <CaseStudiesSection />
       <ToastCard />
-      <LiveDetailsReport />
       <AboutSection />
-      <Footer />
     </main>
   );
 }

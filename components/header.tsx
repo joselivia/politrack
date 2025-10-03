@@ -1,11 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, Radio, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Header() {
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleNavClick = (sectionId: string) => {
@@ -41,6 +43,15 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
+            <button
+              onClick={() => router.push("/polls")}
+              className="text-sm lg:text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-2 px-1"
+            >
+              <span className="animate-pulse">
+                <Radio className="w-4 h-4 inline-block mr-1" />
+              </span>
+              Live Polls
+            </button>
             <button
               onClick={() => handleNavClick("services")}
               className="text-sm lg:text-base font-semibold text-foreground hover:text-accent transition-colors duration-200 py-2 px-1"
