@@ -70,7 +70,7 @@ const COLORS = [
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const LiveDetailsReport = ({ compact = false }: { compact?: boolean }) => {
+const LiveDetailsReport = ({ compact = false }: any) => {
   const params = useParams();
   const pollId = params.id as string;
 
