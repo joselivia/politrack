@@ -197,7 +197,7 @@ export default function Footer() {
                     Phone
                   </div>
                   <div className="text-slate-400 text-xs sm:text-sm">
-                    +254 700 123 456
+                    +254 711 392 818
                   </div>
                 </div>
               </div>
