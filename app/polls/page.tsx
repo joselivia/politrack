@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { baseURL, websocketURL } from "@/config/baseUrl";
+import { baseURL } from "@/config/baseUrl";
 import Link from "next/link";
 import {
   Loader2,
