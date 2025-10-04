@@ -19,7 +19,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function InsightPage({ params }: PageProps) {
+export default function InsightPage({ params }: any) {
   const insight = getSerializableInsightById(params.slug);
 
   if (!insight) {
