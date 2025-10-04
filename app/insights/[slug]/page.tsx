@@ -29,7 +29,7 @@ export default function InsightPage({ params }: PageProps) {
   return <InsightPageClient insight={insight} />;
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: any) {
   const insight = getSerializableInsightById(params.slug);
 
   if (!insight) {
