@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { usePDFDownload } from "@/hooks/use-pdf-download";
 
 interface SerializableInsight {
   id: string;
@@ -50,9 +51,10 @@ const iconComponents = {
   FileText: FileText,
 };
 
-export default function InsightPageClient({ insight }: InsightPageClientProps) {
+export default function InsightPageClient({ insight }: any) {
   const [isLoading, setIsLoading] = React.useState(!insight);
   const [error, setError] = React.useState<string | null>(null);
+  const { downloadPDF, isGenerating } = usePDFDownload();
 
   // Get the appropriate icon component
   const IconComponent = insight?.iconName
@@ -257,6 +259,19 @@ export default function InsightPageClient({ insight }: InsightPageClientProps) {
     );
   }
 
+  const handleDownload = async () => {
+    if (!insight) {
+      toast.error("No insight data available for download.");
+      return;
+    }
+
+    try {
+      await downloadPDF(insight);
+    } catch (error) {
+      // Error is already handled in the hook
+    }
+  };
+
   // Success State - Updated to use IconComponent
   return (
     <>
@@ -298,13 +313,21 @@ export default function InsightPageClient({ insight }: InsightPageClientProps) {
 
             <div className="flex items-center space-x-4 mb-12">
               <Button
-                onClick={() => {
-                  toast.info("Download feature is not available yet.");
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+                onClick={handleDownload}
+                disabled={isGenerating}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Download className="h-5 w-5 mr-2" />
-                Download Full Report (PDF)
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-5 w-5 mr-2" />
+                    Download Full Report (PDF)
+                  </>
+                )}
               </Button>
               <Button
                 onClick={() => {

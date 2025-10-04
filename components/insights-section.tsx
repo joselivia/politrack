@@ -23,10 +23,12 @@ import {
   Users,
   BarChart3,
   Target,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { usePDFDownload } from "@/hooks/use-pdf-download";
 
 const economicData = [
   { month: "Jan", growth: 2.1, inflation: 8.5 },
@@ -49,6 +51,32 @@ const insights = [
     icon: Users,
     color: "from-blue-500/20 to-cyan-500/20",
     borderColor: "border-blue-200/50",
+    content: {
+      pages: 24,
+      language: "English",
+      sections: [
+        {
+          title: "Executive Summary",
+          content: [
+            "This comprehensive study examines the political engagement patterns of African youth across five major nations. Our research reveals a significant shift towards digital platforms for civic participation.",
+            "The data indicates that 78% of urban youth aged 18-35 are actively engaged in political discourse through social media and digital platforms.",
+          ],
+        },
+        {
+          title: "Methodology",
+          content: [
+            "The study employed a mixed-methods approach, combining quantitative surveys with qualitative interviews across urban centers in Nigeria, Kenya, Ghana, South Africa, and Egypt.",
+            "Sample size: 5,000 respondents with balanced gender representation and age distribution.",
+          ],
+        },
+      ],
+      keyFindings: [
+        "78% increase in youth political participation through digital platforms",
+        "Social media emerged as the primary channel for political discourse",
+        "Youth prefer issue-based politics over traditional party affiliations",
+        "Mobile technology accessibility correlates with higher engagement rates",
+      ],
+    },
   },
   {
     id: "post-election-analysis-nigeria-2023",
@@ -61,6 +89,24 @@ const insights = [
     icon: BarChart3,
     color: "from-green-500/20 to-emerald-500/20",
     borderColor: "border-green-200/50",
+    content: {
+      pages: 18,
+      language: "English",
+      sections: [
+        {
+          title: "Election Overview",
+          content: [
+            "Analysis of the 2023 Nigerian general elections reveals significant shifts in voter behavior and regional voting patterns.",
+            "Turnout rates varied significantly across regions, with notable increases in youth participation.",
+          ],
+        },
+      ],
+      keyFindings: [
+        "Youth voter turnout increased by 15% compared to 2019 elections",
+        "Digital campaign strategies influenced urban voting patterns",
+        "Regional disparities in voter access and participation persist",
+      ],
+    },
   },
   {
     id: "economic-sentiment-tracker-q1-2024",
@@ -73,14 +119,38 @@ const insights = [
     icon: TrendingUp,
     color: "from-purple-500/20 to-violet-500/20",
     borderColor: "border-purple-200/50",
+    content: {
+      pages: 12,
+      language: "English",
+      sections: [
+        {
+          title: "Economic Indicators",
+          content: [
+            "This quarterly tracker analyzes business confidence and consumer sentiment across key East African markets including Kenya, Tanzania, Uganda, and Rwanda.",
+            "Data collected from 2,000 businesses and 5,000 consumers across the region.",
+          ],
+        },
+      ],
+      keyFindings: [
+        "Business confidence index shows 5% improvement quarter-over-quarter",
+        "Consumer spending patterns indicate cautious optimism",
+        "Service sector shows strongest growth sentiment",
+        "Inflation concerns remain the primary economic worry",
+      ],
+    },
   },
 ];
 
 export default function InsightsSection() {
+  const { downloadPDF, isGenerating } = usePDFDownload();
   const router = useRouter();
 
-  const handleDownloadClick = (insightTitle: string) => {
-    toast.info(`Download feature for "${insightTitle}" is not available yet.`);
+  const handleDownloadClick = async (insight: any) => {
+    try {
+      await downloadPDF(insight);
+    } catch (error) {
+      // Error is already handled in the hook
+    }
   };
 
   const handleSubscribeClick = () => {
@@ -166,12 +236,17 @@ export default function InsightsSection() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                       <Button
                         variant="outline"
-                        onClick={() => handleDownloadClick(insight.title)}
+                        onClick={() => handleDownloadClick(insight)}
+                        disabled={isGenerating}
                         size="sm"
-                        className="border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer w-full sm:w-auto"
+                        className="border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer w-full sm:w-auto disabled:opacity-50"
                       >
-                        <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                        Download PDF
+                        {isGenerating ? (
+                          <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                        )}
+                        {isGenerating ? "Generating..." : "Download PDF"}
                       </Button>
                       <Button
                         variant="ghost"
