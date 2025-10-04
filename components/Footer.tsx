@@ -1,7 +1,15 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Phone, MapPin, Linkedin, Twitter, Globe } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Linkedin,
+  Twitter,
+  Globe,
+  Facebook,
+} from "lucide-react";
 import Image from "next/image";
 
 const offices = [
@@ -81,15 +89,21 @@ export default function Footer() {
               leaders, policymakers, and businesses across the continent.
             </p>
             <div className="flex space-x-2 sm:space-x-3">
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="icon"
                 className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-8 w-8 sm:h-10 sm:w-10"
               >
                 <Linkedin className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
+              </Button> */}
               <Button
                 variant="ghost"
+                onClick={() =>
+                  window.open(
+                    "https://x.com/polytrackk?t=rrnHBdUYdyhjWyrP4n7iQQ&s=08",
+                    "_blank"
+                  )
+                }
                 size="icon"
                 className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-8 w-8 sm:h-10 sm:w-10"
               >
@@ -97,10 +111,16 @@ export default function Footer() {
               </Button>
               <Button
                 variant="ghost"
+                onClick={() =>
+                  window.open(
+                    "https://www.facebook.com/share/1AukUMyo61/",
+                    "_blank"
+                  )
+                }
                 size="icon"
                 className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-8 w-8 sm:h-10 sm:w-10"
               >
-                <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Facebook className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
           </div>
@@ -183,7 +203,7 @@ export default function Footer() {
                     Email
                   </div>
                   <div className="text-slate-400 text-xs sm:text-sm">
-                    insights@politrackafrica.co.ke
+                    politrackafricaltd@gmail.com
                   </div>
                 </div>
               </div>
@@ -231,19 +251,19 @@ export default function Footer() {
           </div>
           <div className="flex space-x-4 sm:space-x-6 text-xs sm:text-sm">
             <a
-              href="#"
+              href="/privacy-policy"
               className="text-slate-400 hover:text-yellow-400 transition-colors duration-200"
             >
               Privacy Policy
             </a>
             <a
-              href="#"
+              href="/terms-of-service"
               className="text-slate-400 hover:text-yellow-400 transition-colors duration-200"
             >
               Terms of Service
             </a>
             <a
-              href="#"
+              href="/cookie-policy"
               className="text-slate-400 hover:text-yellow-400 transition-colors duration-200"
             >
               Cookie Policy

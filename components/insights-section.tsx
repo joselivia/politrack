@@ -25,6 +25,7 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 const economicData = [
@@ -76,6 +77,8 @@ const insights = [
 ];
 
 export default function InsightsSection() {
+  const router = useRouter();
+
   const handleDownloadClick = (insightTitle: string) => {
     toast.info(`Download feature for "${insightTitle}" is not available yet.`);
   };
@@ -91,8 +94,8 @@ export default function InsightsSection() {
   };
 
   const handleReadMoreClick = (insightId: string) => {
-    // navigate to .insights/[slug]
-    window.location.href = `/insights/${insightId}`;
+    // Use Next.js router for client-side navigation
+    router.push(`/insights/${insightId}`);
   };
 
   return (

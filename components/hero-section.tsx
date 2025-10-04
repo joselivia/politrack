@@ -60,7 +60,8 @@ interface ChartData {
 const fetcher = (url: string) =>
   fetch(url).then((res) => {
     if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+      console.log("Fetch error:", res);
+      // throw new Error(`HTTP error! status: ${res.status}`);
     }
     return res.json();
   });
@@ -110,8 +111,14 @@ const StatsSkeleton = () => (
 );
 
 export default function HeroSection() {
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [regionData, setRegionData] = useState<ChartData[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  // Set isClient to true when component mounts on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Fetch published polls data with real-time updates
   const {
@@ -159,7 +166,7 @@ export default function HeroSection() {
       setRegionData(processedRegionData);
     } else if (pollsData && !Array.isArray(pollsData)) {
       // Handle case where API returns non-array data
-      console.error("Expected array but got:", typeof pollsData);
+      console.log("Expected array but got:", pollsData);
       setRegionData([]);
     }
   }, [pollsData]);
@@ -286,7 +293,7 @@ export default function HeroSection() {
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black text-balance leading-tight tracking-tight">
                 Decoding
-                <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent block">
+                <span className="bg-gradient-to-r from-accent to-foreground bg-clip-text text-transparent block">
                   Africa&apos;s Pulse
                 </span>
               </h1>
@@ -394,10 +401,13 @@ export default function HeroSection() {
               </div>
             )}
 
-            {/* Last Updated */}
+            {/* Last Updated - Fixed hydration issue */}
             <div className="text-xs font-semibold text-green-600 flex items-center justify-center sm:justify-start">
               <Clock className="h-3 w-3 mr-1" />
-              Last updated: {lastUpdated.toLocaleTimeString()}
+              Last updated:{" "}
+              {isClient && lastUpdated
+                ? lastUpdated.toLocaleTimeString()
+                : "Loading..."}
               {isLoading && <Loader2 className="h-3 w-3 ml-2 animate-spin" />}
             </div>
           </div>
