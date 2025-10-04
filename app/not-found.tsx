@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Header from "@/components/header";
 import {
   ArrowLeft,
   Search,
@@ -14,7 +13,6 @@ import {
   Home,
   Compass,
 } from "lucide-react";
-import Footer from "@/components/footer";
 
 export default function NotFound() {
   const popularPages = [

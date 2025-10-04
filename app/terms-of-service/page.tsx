@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, FileText, Scale, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
 
 export default function TermsOfService() {
   const sections = [
