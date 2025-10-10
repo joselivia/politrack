@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Menu, Radio, X } from "lucide-react";
+import { Menu, Radio, X, Home, Twitter, Facebook } from "lucide-react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
@@ -25,6 +25,16 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   };
 
+  const handleHomeClick = () => {
+    if (pathname !== "/") {
+      router.push("/");
+    } else {
+      // If already on home page, scroll to top
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    setIsMobileMenuOpen(false);
+  };
+
   const handleGetStartedClick = () => {
     // You can replace this with your actual get started logic
     console.log("Get Started clicked");
@@ -44,17 +54,24 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Image
+              onClick={handleHomeClick}
               src="/politrack.png"
               alt="Politrack Africa"
               width={160}
               height={40}
-              className="h-8 sm:h-10 lg:h-12 w-auto object-contain rounded-sm"
+              className="h-8 sm:h-10 lg:h-12 cursor-pointer w-auto object-contain rounded-sm"
               priority
             />
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8">
+            {/* <button className="flex items-center text-sm lg:text-base font-semibold text-foreground  hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap">
+              <span className="flex items-center">
+                <Home className="w-4 h-4 inline-block mr-1" />
+                Home
+              </span>
+            </button> */}
             <button
               onClick={handleLivePollsClick}
               className="flex items-center text-sm lg:text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap"
@@ -88,13 +105,44 @@ export default function Header() {
             >
               About
             </button>
-            <Button
+
+            {/* Social Media Buttons - Desktop */}
+            <div className="flex items-center space-x-2 ml-4">
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  window.open(
+                    "https://x.com/polytrackk?t=rrnHBdUYdyhjWyrP4n7iQQ&s=08",
+                    "_blank"
+                  )
+                }
+                size="icon"
+                className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-8 w-8 sm:h-10 sm:w-10"
+              >
+                <Twitter className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  window.open(
+                    "https://www.facebook.com/share/1AukUMyo61/",
+                    "_blank"
+                  )
+                }
+                size="icon"
+                className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-8 w-8 sm:h-10 sm:w-10"
+              >
+                <Facebook className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            </div>
+
+            {/* <Button
               onClick={handleGetStartedClick}
               size="lg"
               className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-4 lg:px-6 text-sm lg:text-base whitespace-nowrap"
             >
               Get Started
-            </Button>
+            </Button> */}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -116,6 +164,13 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border shadow-lg">
             <nav className="container mx-auto px-4 sm:px-6 py-4 space-y-3">
+              {/* <button
+                onClick={handleHomeClick}
+                className="w-full flex items-center text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
+              >
+                <Home className="w-4 h-4 inline-block mr-2" />
+                Home
+              </button> */}
               <button
                 onClick={handleLivePollsClick}
                 className="w-full flex items-center text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
@@ -147,13 +202,44 @@ export default function Header() {
               >
                 About
               </button>
-              <Button
+
+              {/* Social Media Buttons - Mobile */}
+              <div className="flex justify-center space-x-4 py-4 border-b border-border/50">
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    window.open(
+                      "https://x.com/polytrackk?t=rrnHBdUYdyhjWyrP4n7iQQ&s=08",
+                      "_blank"
+                    )
+                  }
+                  size="icon"
+                  className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-10 w-10"
+                >
+                  <Twitter className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    window.open(
+                      "https://www.facebook.com/share/1AukUMyo61/",
+                      "_blank"
+                    )
+                  }
+                  size="icon"
+                  className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-10 w-10"
+                >
+                  <Facebook className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* <Button
                 onClick={handleGetStartedClick}
                 size="lg"
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 mt-2"
               >
                 Get Started
-              </Button>
+              </Button> */}
             </nav>
           </div>
         )}

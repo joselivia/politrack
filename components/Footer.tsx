@@ -205,6 +205,9 @@ export default function Footer() {
                   <div className="text-slate-400 text-xs sm:text-sm">
                     politrackafricaltd@gmail.com
                   </div>
+                  <div className="text-slate-400 text-xs sm:text-sm">
+                    info@politrack.africa
+                  </div>
                 </div>
               </div>
 
