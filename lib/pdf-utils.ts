@@ -1,8 +1,5 @@
-// lib/pdf-utils.ts
 import { jsPDF } from "jspdf";
-import { InsightContent } from "@/content/insights-content";
 
-// Function to generate and download PDF
 export async function downloadInsightAsPDF(insight: any): Promise<void> {
   try {
     // Create new PDF document

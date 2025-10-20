@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { set } from "date-fns";
 import { Menu, Radio, X, Home, Twitter, Facebook } from "lucide-react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -46,7 +47,11 @@ export default function Header() {
     router.push("/polls");
     setIsMobileMenuOpen(false);
   };
-
+const handleAdmin=()=>{
+  
+  router.replace("/Admin");
+  setIsMobileMenuOpen(false);
+}
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,12 +71,12 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 xl:space-x-8">
-            {/* <button className="flex items-center text-sm lg:text-base font-semibold text-foreground  hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap">
+            <button onClick={handleHomeClick} className="flex items-center text-sm lg:text-base font-semibold cursor-pointer text-foreground  hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap">
               <span className="flex items-center">
                 <Home className="w-4 h-4 inline-block mr-1" />
                 Home
               </span>
-            </button> */}
+            </button>
             <button
               onClick={handleLivePollsClick}
               className="flex items-center text-sm lg:text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-2 px-1 whitespace-nowrap"
@@ -119,7 +124,7 @@ export default function Header() {
                 size="icon"
                 className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-8 w-8 sm:h-10 sm:w-10"
               >
-                <Twitter className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Twitter color="black" className="h-5 w-5 sm:h-5 sm:w-5" />
               </Button>
               <Button
                 variant="ghost"
@@ -132,17 +137,17 @@ export default function Header() {
                 size="icon"
                 className="text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 rounded-lg h-8 w-8 sm:h-10 sm:w-10"
               >
-                <Facebook className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Facebook color="blue" className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
 
-            {/* <Button
-              onClick={handleGetStartedClick}
+            <Button
+              onClick={handleAdmin}
               size="lg"
               className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-4 lg:px-6 text-sm lg:text-base whitespace-nowrap"
             >
-              Get Started
-            </Button> */}
+         Login
+            </Button>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -164,13 +169,13 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border shadow-lg">
             <nav className="container mx-auto px-4 sm:px-6 py-4 space-y-3">
-              {/* <button
+              <button
                 onClick={handleHomeClick}
                 className="w-full flex items-center text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
               >
                 <Home className="w-4 h-4 inline-block mr-2" />
                 Home
-              </button> */}
+              </button>
               <button
                 onClick={handleLivePollsClick}
                 className="w-full flex items-center text-left text-base font-semibold text-foreground cursor-pointer hover:text-accent transition-colors duration-200 py-3 px-2 border-b border-border/50"
@@ -233,13 +238,13 @@ export default function Header() {
                 </Button>
               </div>
 
-              {/* <Button
+              <Button
                 onClick={handleGetStartedClick}
                 size="lg"
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 mt-2"
               >
-                Get Started
-              </Button> */}
+    Login
+              </Button>
             </nav>
           </div>
         )}

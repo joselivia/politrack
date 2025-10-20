@@ -3,13 +3,44 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import ClientLayoutWrapper from "./ClientLayoutWrapper";
 
 export const metadata: Metadata = {
   title: "Politrack Africa | Data-Driven Political Insights",
-  description: "Politrack Africa: Where Numbers Meet Narrative",
-  keywords: ["Political Insights", "Data-Driven", "Africa"],
+  description:
+    "Politrack Africa is East Africa’s leading political research and consumer insight company. We specialize in election polling, voter sentiment analysis, and data-driven decision-making for governments, brands, and NGOs.",
+  keywords: [
+    "Political research Kenya",
+    "Opinion polling East Africa",
+    "Consumer insight surveys Africa",
+    "Election polling firm Kenya",
+    "Public opinion data analysis",
+    "Political survey company Nairobi",
+    "Voter sentiment tracking",
+    "Constituency-level polling Kenya",
+    "Brand perception surveys Africa",
+    "Political forecasting firm",
+    "Ward-level political analysis Kenya",
+    "Predictive modeling for elections",
+    "Clan-based voting behavior studies",
+    "Statistically neutral survey design",
+    "Political polling methodology experts",
+    "Business market research East Africa",
+    "Consumer behavior analytics Kenya",
+    "Corporate brand credibility surveys",
+    "Politrack Africa polling reports",
+    "Kenya political opinion trends",
+    "Trusted political polling firm",
+    "Accurate election predictions Kenya",
+    "Data-driven consumer insights",
+    "Award-winning research company",
+    "Real-time voter sentiment analysis",
+    "Professional polling services East Africa",
+    "East African voter insights",
+    "Kiambu constituency polling data",
+    "Sigona ward election projections",
+    "African polling company",
+  ],
   manifest: "/favicons/site.webmanifest",
   icons: {
     icon: [
@@ -40,12 +71,7 @@ export const metadata: Metadata = {
     "theme-color": "#ffffff",
   },
 };
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap", });
 
 export default function RootLayout({
   children,
@@ -60,9 +86,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className={`font-sans ${inter.variable}`}>
-        <Header />
-        {children}
-        <Footer />
+ 
+    <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+  
         <ToastContainer
           toastClassName="text-sm"
           position="bottom-right"
