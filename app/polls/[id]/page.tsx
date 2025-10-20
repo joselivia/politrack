@@ -424,7 +424,7 @@ const LiveDetailsReport = ({ compact = false }: any) => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({ percentage }) => `(${percentage.toFixed(1)}%)`}
+                    label={({ percentage }:any) => `(${percentage.toFixed(1)}%)`}
                     labelLine={false}
                   >
                     {chartData.map((_, index) => (

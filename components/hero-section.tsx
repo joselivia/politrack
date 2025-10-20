@@ -55,6 +55,8 @@ interface ChartData {
   percentage?: number;
   color?: string;
   count?: number;
+  [key: string]: string | number | undefined;
+
 }
 
 const fetcher = (url: string) =>
