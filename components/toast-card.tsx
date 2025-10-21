@@ -206,6 +206,8 @@ export default function ToastCard() {
           >
             View Full Results
           </Link>
+
+   
         </div>
 
         {/* Footer with Dot Indicators */}

@@ -311,7 +311,7 @@ const AllApirantPollPage = () => {
               </div>
               <div className="mt-4 flex flex-col sm:flex-row gap-3">
                  <Link
-                    href={`/vote/${poll.id}`}
+                    href={`/Admin/vote/${poll.id}`}
                     className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
                   >
                     Vote
