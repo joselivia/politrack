@@ -4,7 +4,8 @@ import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClientLayoutWrapper from "./ClientLayoutWrapper";
-import Footer from "@/components/Footer";
+import Footer from "@/components/footer";
+
 
 export const metadata: Metadata = {
   title: "Politrack Africa | Data-Driven Political Insights",
