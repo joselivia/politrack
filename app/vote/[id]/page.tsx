@@ -1,8 +1,9 @@
 'use client';
 
+import VoteInterface from '@/app/Admin/components/voterInterface';
 import { useParams } from 'next/navigation';
 import React from 'react';
-import VoteInterface from '../../components/voterInterface';
+
 export default function VotePage() {
   const params = useParams();
   const pollId = parseInt(params.id as string);
