@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClientLayoutWrapper from "./ClientLayoutWrapper";
-import Footer from "@/components/footer";
+import Footer from "@/components/Footer";
 
 
 export const metadata: Metadata = {
