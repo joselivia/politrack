@@ -144,7 +144,7 @@ const router=useRouter();
         setMessage("Vote recorded successfully!");
         setSelectedCandidateId(null);
      if (!isAdmin) {
-          setTimeout(() => router.replace("/Admin/Thankyou"), 1000);
+          setTimeout(() => router.replace("/Thankyou"), 1000);
         }
        }
     } catch (error: any) {
