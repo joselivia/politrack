@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClientLayoutWrapper from "./ClientLayoutWrapper";
-import Footer from "../components/Footer";
 
 
 export const metadata: Metadata = {
@@ -90,7 +89,7 @@ export default function RootLayout({
       <body className={`font-sans ${inter.variable}`}>
  
     <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
-  <Footer />
+
         <ToastContainer
           toastClassName="text-sm"
           position="bottom-right"

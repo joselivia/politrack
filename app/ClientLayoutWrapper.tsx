@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Navbar from "@/app/Admin/components/Navbar";
 import Header from "@/components/header";
+import Footer from "@/components/Footer";
 
 
 export default function ClientLayoutWrapper({
@@ -23,8 +24,6 @@ export default function ClientLayoutWrapper({
     if (adminStatus && (pathname === "/" || pathname === "/Admin")) {
       router.replace("/Admin/Reports");
     }
-
-    // Optional: redirect logged-out user away from admin pages
     if (!adminStatus && pathname.startsWith("/Admin") && !isVotePage && !isLoginPage) {
       router.replace("/Admin");
     }
@@ -47,7 +46,7 @@ export default function ClientLayoutWrapper({
       )}
 
       <main>{children}</main>
-
+  <Footer />
     </>
   );
 }

@@ -312,7 +312,7 @@ const LiveDetailsReport = ({ compact = false }: any) => {
   }
 
   return (
-    <div className="bg-white mx-auto max-w-6xl rounded-xl shadow-lg border border-gray-200 p-6 my-3">
+    <div className="bg-white mx-auto  rounded-xl shadow-lg border border-gray-200 p-6 my-3">
       {/* Header Section */}
       <div className="text-center mb-6 pb-4 border-b border-gray-200">
         <div className="flex items-center justify-center mb-2">
@@ -415,7 +415,8 @@ const LiveDetailsReport = ({ compact = false }: any) => {
                 <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" />
                 Vote Distribution
               </h2>
-              <ResponsiveContainer width="100%" height={250}>
+     <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+  <ResponsiveContainer width="100%" height={Math.max(chartData.length * 40, 300)}>
                 <PieChart>
                   <Pie
                     data={chartData}
@@ -424,7 +425,7 @@ const LiveDetailsReport = ({ compact = false }: any) => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({ percentage }:any) => `(${percentage.toFixed(1)}%)`}
+label={({ percentage }:any) => `(${percentage.toFixed(1)}%)`}
                     labelLine={false}
                   >
                     {chartData.map((_, index) => (
@@ -442,7 +443,7 @@ const LiveDetailsReport = ({ compact = false }: any) => {
                   />
                   <Legend />
                 </PieChart>
-              </ResponsiveContainer>
+              </ResponsiveContainer></div>
             </div>
 
             {/* Bar Chart */}
@@ -451,7 +452,8 @@ const LiveDetailsReport = ({ compact = false }: any) => {
                 <BarChart2 className="w-5 h-5 mr-2 text-green-600" />
                 Votes by Candidate
               </h2>
-              <ResponsiveContainer width="100%" height={250}>
+    <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+  <ResponsiveContainer width="100%" height={Math.max(chartData.length * 40, 300)}>
                 <BarChart
                   data={chartData}
                   layout="vertical"
@@ -462,11 +464,15 @@ const LiveDetailsReport = ({ compact = false }: any) => {
                     type="category"
                     tickLine={false}
                     axisLine={false}
-                    width={90}
+                    width={120}
+                    tickFormatter={(name)=>
+                      name.length > 15 ? name.substring(0,15) + "..":name
+                    }
                   />
                   <XAxis
                     type="number"
                     tickFormatter={(v) => v.toLocaleString()}
+               
                   />
                   <Tooltip
                     formatter={(value: number) =>
@@ -482,7 +488,7 @@ const LiveDetailsReport = ({ compact = false }: any) => {
                     ))}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
+              </ResponsiveContainer></div>
             </div>
           </div>
 
