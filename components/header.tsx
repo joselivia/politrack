@@ -35,13 +35,6 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   };
 
-  const handleGetStartedClick = () => {
-    // You can replace this with your actual get started logic
-    console.log("Get Started clicked");
-    // Example: scroll to contact section or open a modal
-    setIsMobileMenuOpen(false);
-  };
-
   const handleLivePollsClick = () => {
     router.push("/polls");
     setIsMobileMenuOpen(false);
@@ -238,7 +231,7 @@ const handleAdmin=()=>{
               </div>
 
               <Button
-                onClick={handleGetStartedClick}
+                   onClick={handleAdmin}
                 size="lg"
                 className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold py-3 mt-2"
               >

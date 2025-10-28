@@ -30,6 +30,7 @@ import {
   YAxis,
 } from "recharts";
 import { useParams } from "next/navigation";
+import CommentSection from "@/components/CommentSection";
 
 export interface Candidate {
   id: number;
@@ -493,7 +494,8 @@ label={({ percentage }:any) => `(${percentage.toFixed(1)}%)`}
           </div>
 
           {/* Results Table */}
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <div className="rounded-lg border border-gray-200 flex flex-col md:flex-row overflow-hidden">
+           <div className="w-full md:w-3/4 overflow-x-auto">
             <table className="min-w-full bg-white text-sm">
               <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
@@ -560,6 +562,11 @@ label={({ percentage }:any) => `(${percentage.toFixed(1)}%)`}
                 ))}
               </tbody>
             </table>
+</div>
+<div className="w-full md:w-1/4 border-t md:border-t-0 md:border-l border-gray-200 p-4 bg-gray-50 h-[500px]">
+  <CommentSection pollId={data.id} />
+</div>
+
           </div>
         </>
       )}

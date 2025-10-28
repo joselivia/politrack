@@ -38,7 +38,6 @@ export default function ClientLayoutWrapper({
 
   return (
     <>
-      {/* Admin Navbar on admin routes (except login) */}
       {isAdmin && !hideNavbarOnLogin && pathname.startsWith("/Admin") ? (
         <Navbar />
       ) : (

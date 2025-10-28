@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Server,
   WifiOff,
+  Share2,
 } from "lucide-react";
 
 export interface PollData {
@@ -386,12 +387,35 @@ const LivePolls = () => {
                       </div>
 
                       {/* Action Button */}
-                      <Link
+                      <div className="flex justify-center items-center gap-5">                           <Link
                         href={`/polls/${poll.id}`}
                         className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg"
                       >
                         View Detailed Results
                       </Link>
+                  <button
+  onClick={() => {
+    const shareUrl = `${window.location.origin}/polls/${poll.id}`;
+    const shareData = {
+      title: poll.title,
+      text: "Check out this live poll on Politrack Africa!",
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      navigator.share(shareData).catch((err) => console.error("Share failed:", err));
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      alert("🔗 Link copied to clipboard!");
+    }
+  }}
+  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+>
+  <Share2 className="w-6 h-6 text-blue-500" />
+</button>
+
+                      </div>
+                   
                     </div>
                   </div>
                 ))}
