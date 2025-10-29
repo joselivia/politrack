@@ -78,7 +78,7 @@ const LiveDetailsReport = ({ compact = false }: any) => {
   const { data, error, isLoading } = useSWR<PollData>(
     pollId ? `${baseURL}/api/aspirant/${pollId}` : null,
     fetcher,
-    { refreshInterval: 1000 } // Real-time updates every second
+    { refreshInterval: 1000 } 
   );
 
   const [showAll, setShowAll] = useState(false);

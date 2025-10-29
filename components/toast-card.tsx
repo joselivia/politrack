@@ -5,9 +5,6 @@ import {
   X,
   MapPin,
   Users,
-  Clock,
-  Crown,
-  Award,
   ChevronLeft,
   ChevronRight,
   TrendingUp,
@@ -36,7 +33,6 @@ export default function ToastCard() {
         if (!response.ok) throw new Error("Failed to fetch polls.");
 
         const data: any[] = await response.json();
-
         // Get ALL live polls
         const livePolls = data.filter(
           (p) => new Date(p.voting_expires_at) > new Date()
