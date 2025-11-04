@@ -58,7 +58,7 @@ const AllApirantPollPage = () => {
         throw new Error(errorData.message || "Failed to fetch polls.");
       }
       const data: PollData[] = await response.json();
-      console.log(data);
+
       setPolls(data);
     } catch (err: any) {
       setError(
@@ -127,7 +127,6 @@ const AllApirantPollPage = () => {
         formData.append(`competitors[${i}][profile]`, comp.profile);
       }
     });
-    console.log("FormData entries:", [...formData.entries()]);
     try {
       const res = await fetch(`${baseURL}/api/aspirant/${id}`, {
         method: "PUT",
@@ -137,12 +136,11 @@ const AllApirantPollPage = () => {
       if (!res.ok) throw new Error("Failed to update poll");
 
       const updated = await res.json();
-      console.log({voting_expires_at:updated.poll.voting_expires_at});
       setPolls((prev) =>
         prev.map((p) => (p.id === updated.poll.id ? updated.poll : p))
       );
       setEditingPoll(null);
-      router.push("/Reports");
+      router.push("/Admin/Reports");
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -165,9 +163,6 @@ const AllApirantPollPage = () => {
       } catch (err) {
         console.error("Error fetching competitor question:", err);
       }
-
-      console.log("Fetched poll data:", data);
-
       setEditingPoll({
         ...data,
         competitors:
@@ -188,7 +183,6 @@ const AllApirantPollPage = () => {
           : [],
       });
     } catch (err) {
-      console.error("Failed to fetch poll with competitors:", err);
       alert("Failed to load poll for editing.");
     }
   };
@@ -310,12 +304,16 @@ const AllApirantPollPage = () => {
                 </div>
               </div>
               <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                 <Link
-                    href={`/Admin/vote/${poll.id}`}
-                    className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
-                  >
-                    Vote
-                  </Link>
+<Link
+  href={{
+    pathname: `/Admin/vote/${poll.id}`,
+    query: { region: poll.region, county: poll.county },
+  }}
+  className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+>
+  Vote
+</Link>
+
                           <Link
                   href={`/Admin/fullvotes/${poll.id}`}
                   className="block text-indigo-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"

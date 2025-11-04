@@ -29,6 +29,7 @@ import {
   Clock10Icon,
 } from "lucide-react";
 import useSWR from "swr";
+import StrongSupport from "./StrongSupport";
 
 export interface Candidate {
   id: number;
@@ -53,6 +54,7 @@ export interface PollData {
   results: Candidate[];
   created_at: Date | string;
   voting_expires_at: string;
+  competitor_id: number;
 }
 
 const COLORS = [
@@ -70,7 +72,6 @@ const COLORS = [
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const FullPollDetails = ({ id }: { id?: number }) => {
-  
   const { data, error, isLoading } = useSWR<PollData>(
     id ? `${baseURL}/api/aspirant/${id}` : null,
     fetcher,
@@ -79,33 +80,36 @@ const FullPollDetails = ({ id }: { id?: number }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [countdown, setCountdown] = useState<string>("");
+  const [selectedCandidate, setSelectedCandidate] = useState<number | null>(
+    null
+  );
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
     setIsAdmin(adminStatus === "true");
     setMounted(true);
   }, []);
 
-    useEffect(() => {
-      if (!data?.voting_expires_at) return;
-  
-      const interval = setInterval(() => {
-        const now = new Date();
-        const expires = new Date(data.voting_expires_at);
-        const diff = expires.getTime() - now.getTime();
-  
-        if (diff <= 0) {
-          setCountdown("Voting closed");
-          clearInterval(interval);
-        } else {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff / (1000 * 60)) % 60);
-          const seconds = Math.floor((diff / 1000) % 60);
-          setCountdown(`${hours}h ${minutes}m ${seconds}s`);
-        }
-      }, 1000);
-  
-      return () => clearInterval(interval);
-    }, [data?.voting_expires_at]);
+  useEffect(() => {
+    if (!data?.voting_expires_at) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const expires = new Date(data.voting_expires_at);
+      const diff = expires.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setCountdown("Voting closed");
+        clearInterval(interval);
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+        setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [data?.voting_expires_at]);
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -168,7 +172,7 @@ const FullPollDetails = ({ id }: { id?: number }) => {
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         {/* Header Section */}
         <div className="text-center mb-8 pb-4 border-b border-gray-200">
-      <p className="flex items-center justify-center text-red-600">
+          <p className="flex items-center justify-center text-red-600">
             <Clock10Icon className="mr-3 " />
             Count Down {countdown || "Not set"}
           </p>
@@ -176,145 +180,182 @@ const FullPollDetails = ({ id }: { id?: number }) => {
             <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
             {data.title || " Poll Details"}
           </h1>
-    
-          <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
-            <Info className="w-4 h-4 mr-2 text-gray-500" />
-            Presidential Executive:
-            <span className="font-semibold ml-1">
-              {data.presidential || "N/A"}
-            </span>
-          </p>
-          <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
-            <Info className="w-4 h-4 mr-2 text-gray-500" />
-            Category:{" "}
-            <span className="font-semibold ml-1">{data.category || "N/A"}</span>
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
-            <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
-              <MapPin className="w-4 h-4 mr-1 text-gray-500" /> Region:
-              <span className="font-semibold ml-1">{data.region}</span>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 text-sm">
+            <p className="text-gray-600 flex items-center justify-center">
+              <Info className="w-4 h-4 mr-1 text-gray-500" />
+              Presidential:{" "}
+              <span className="font-semibold ml-1">{data.presidential}</span>
             </p>
-            <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
-              <Map className="w-4 h-4 mr-1 text-gray-500" /> County:
-              <span className="font-semibold ml-1">{data.county || "N/A"}</span>
-            </p>
-            <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
-              <Building2 className="w-4 h-4 mr-1 text-gray-500" /> Constituency:
+            <p className="text-gray-600 flex items-center justify-center">
+              <Info className="w-4 h-4 mr-1 text-gray-500" />
+              Category:{" "}
               <span className="font-semibold ml-1">
-                {data.constituency || "N/A"}
+                {data.category || "N/A"}
               </span>
             </p>
-            <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
-              <Building2 className="w-4 h-4 mr-1 text-gray-500" /> Ward:
-              <span className="font-semibold ml-1">{data.ward || "N/A"}</span>
-            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-            <p className="text-gray-700 text-base sm:text-lg font-semibold flex items-center justify-center">
-              <Users className="w-5 h-5 mr-2 text-blue-600" /> Registered
-              Voters:
-              <span className="ml-1">{data.totalVotes.toLocaleString()}</span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-3 text-xs">
+            <p className="text-gray-600 flex items-center justify-center">
+              <MapPin className="w-3 h-3 mr-1 text-gray-500" />
+              {data.region.replace("_", " ")}
             </p>
-            <p className="text-gray-700 text-base sm:text-lg font-semibold flex items-center justify-center">
-              <ListChecks className="w-5 h-5 mr-2 text-green-600" /> Total Valid
-              Votes:
-              <span className="ml-1">{totalValidVotes.toLocaleString()}</span>
+            <p className="text-gray-600 flex items-center justify-center">
+              <Map className="w-3 h-3 mr-1 text-gray-500" />
+              {data.county || "N/A"}
             </p>
-            <p className="text-gray-700 text-base sm:text-lg font-semibold flex items-center justify-center">
-              <X className="w-5 h-5 mr-2 text-red-600" /> Spoiled Votes:
-              <span className="ml-1">{totalSpoiledVotes.toLocaleString()}</span>
+            <p className="text-gray-600 flex items-center justify-center">
+              <Building2 className="w-3 h-3 mr-1 text-gray-500" />
+              {data.constituency?.replace("_", " ") || "N/A"}
             </p>
-            <p className="text-gray-700 text-base sm:text-lg font-semibold flex items-center justify-center">
-              <Clock className="w-5 h-5 mr-2 text-purple-600" /> Turnout:
-              <span className="ml-1">{turnoutPercentage}%</span>
+            <p className="text-gray-600 flex items-center justify-center">
+              <Building2 className="w-3 h-3 mr-1 text-gray-500" />
+              {data.ward || "N/A"}
             </p>
           </div>
         </div>
 
-        {/* Show message if no results yet */}
-        {data.results.length === 0 ? (
+        {/* Vote Statistics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div className="text-center bg-blue-50 rounded-lg p-3 border border-blue-100">
+            <Users className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+            <div className="font-bold text-blue-700 text-lg">
+              {data.totalVotes.toLocaleString()}
+            </div>
+            <div className="text-gray-600 text-sm">Registered Voters</div>
+          </div>
+          <div className="text-center bg-green-50 rounded-lg p-3 border border-green-100">
+            <ListChecks className="w-5 h-5 text-green-600 mx-auto mb-1" />
+            <div className="font-bold text-green-700 text-lg">
+              {totalValidVotes.toLocaleString()}
+            </div>
+            <div className="text-gray-600 text-sm">Valid Votes</div>
+          </div>
+          <div className="text-center bg-red-50 rounded-lg p-3 border border-red-100">
+            <X className="w-5 h-5 text-red-600 mx-auto mb-1" />
+            <div className="font-bold text-red-700 text-lg">
+              {totalSpoiledVotes.toLocaleString()}
+            </div>
+            <div className="text-gray-600 text-sm">Spoiled Votes</div>
+          </div>
+          <div className="text-center bg-purple-50 rounded-lg p-3 border border-purple-100">
+            <Clock className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+            <div className="font-bold text-purple-700 text-lg">
+              {turnoutPercentage}%
+            </div>
+            <div className="text-gray-600 text-sm">Turnout</div>
+          </div>
+        </div>
+ <div className="mb-6"> <h2 className="text-2xl font-bold text-gray-800 flex items-center justify-center">
+            <ListChecks className="w-6 h-6 mr-2 text-blue-600" />
+            Candidate Strongholds
+          </h2>
+          <StrongSupport pollId={data.id} /></div>
+         
+
+
+
+          {data.results.length === 0 ? (
           <div className="text-center text-gray-600 my-6 text-lg">
             No votes have been recorded yet for this poll.
           </div>
         ) : (
           <>
-            {/* Charts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               {/* Pie Chart */}
-              <div className="bg-gray-50 p-2 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
                   <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" />
                   Vote Distribution
                 </h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      dataKey="votes"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      fill="#8884d8"
-                      label={({  percentage }: any) =>
-                        `(${percentage.toFixed(1)}%)`
-                      }
-                      labelLine={false}
-                    >
-                      {chartData.map((_, index) => (
-                        <Cell
-                          key={`pie-cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: number, name: string, props: any) => [
-                        `${value.toLocaleString()} votes`,
-                        props.payload.name,
-                      ]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                  <ResponsiveContainer
+                    width="100%"
+                    height={Math.max(chartData.length * 40, 300)}
+                  >
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        dataKey="votes"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        label={({ percentage }: any) =>
+                          `(${percentage.toFixed(1)}%)`
+                        }
+                        labelLine={false}
+                      >
+                        {chartData.map((_, index) => (
+                          <Cell
+                            key={`pie-cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(
+                          value: number,
+                          name: string,
+                          props: any
+                        ) => [
+                          `${value.toLocaleString()} votes`,
+                          props.payload.name,
+                        ]}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
               {/* Bar Chart */}
-              <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
                   <BarChart2 className="w-5 h-5 mr-2 text-green-600" />
                   Votes by Candidate
                 </h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={chartData}
-                    layout="vertical"
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                  <ResponsiveContainer
+                    width="100%"
+                    height={Math.max(chartData.length * 40, 300)}
                   >
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <XAxis
-                      type="number"
-                      tickFormatter={(v) => v.toLocaleString()}
-                    />
-                    <Tooltip
-                      formatter={(value: number) =>
-                        `${value.toLocaleString()} votes`
-                      }
-                    />
-                    <Bar dataKey="votes" barSize={30} radius={[5, 5, 0, 0]}>
-                      {chartData.map((entry, index) => (
-                        <Cell
-                          key={`bar-cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                    <BarChart
+                      data={chartData}
+                      layout="vertical"
+                      margin={{ top: 10, right: 10, left: 5, bottom: 5 }}
+                    >
+                      <YAxis
+                        dataKey="name"
+                        type="category"
+                        tickLine={false}
+                        axisLine={false}
+                        width={100}
+                        tickFormatter={(name) =>
+                          name.length > 15 ? name.substring(0, 15) + ".." : name
+                        }
+                      />
+                      <XAxis
+                        type="number"
+                        tickFormatter={(v) => v.toLocaleString()}
+                      />
+                      <Tooltip
+                        formatter={(value: number) =>
+                          `${value.toLocaleString()} votes`
+                        }
+                      />
+                      <Bar dataKey="votes" barSize={20} radius={[0, 5, 5, 0]}>
+                        {chartData.map((entry, index) => (
+                          <Cell
+                            key={`bar-cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
 
@@ -353,7 +394,7 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                         {c.profile ? (
                           <img
                             src={c.profile}
-                            alt='Profile'
+                            alt="Profile"
                             className="h-10 w-10 rounded-full border object-cover"
                           />
                         ) : (
