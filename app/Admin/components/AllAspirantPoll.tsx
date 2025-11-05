@@ -324,8 +324,8 @@ const AllApirantPollPage = () => {
             </div>
           ))}
         </div>
-        {editingPoll && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 overflow-y-auto">
+  {editingPoll && (
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50 overflow-y-auto">
             <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[95vh] overflow-y-auto transform scale-95 transition-transform duration-300">
               <h2 className="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-4">
                 Edit Poll Details

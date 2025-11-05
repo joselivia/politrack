@@ -71,7 +71,11 @@ type Action =
   | { type: "UPDATE_OPTION"; payload: { questionId: string; optionIndex: number; newText: string } }
   | { type: "SET_MESSAGE"; payload: string }
   | { type: "SET_SUBMITTING"; payload: boolean }
-  | { type: "RESET_FORM" };
+  | { type: "RESET_FORM" }
+  | { type: "ADD_ASPIRANT_TO_QUESTION"; payload: { questionId: string } }
+| { type: "REMOVE_ASPIRANT_FROM_QUESTION"; payload: { questionId: string; index: number } }
+| { type: "UPDATE_ASPIRANT_IN_QUESTION"; payload: { questionId: string; index: number; field: keyof Aspirant; value: string | File | null } };
+
 
 // --- Reducer Function ---
 const reducer = (state: State, action: Action): State => {
@@ -215,6 +219,9 @@ const CreateQuiz = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [state, dispatch] = useReducer(reducer, initialState);
+const hasCompetitorQuestion = state.dynamicQuestions.some(
+  (q) => q.type === "single-choice" && (q as SingleChoiceQuestion).isCompetitorQuestion
+);
 
   useEffect(() => {
     const id = searchParams.get("pollId");
@@ -250,14 +257,9 @@ const CreateQuiz = () => {
         questionText: "",
         fixedOptions: ["Yes", "No", "Not Sure"],
       };
-    } else {
-      if (state.mainAspirants.some(a => !a.name.trim())) {
-        dispatch({
-          type: "SET_MESSAGE",
-          payload: "⚠️ Please fill in all aspirant names before adding this question.",
-        });
-        return;
-      }
+    
+    }
+     else {
       newQuestion = {
         id,
         type: "single-choice",
@@ -281,11 +283,11 @@ const CreateQuiz = () => {
       return;
     }
 
-    if (state.mainAspirants.some((comp) => !comp.name.trim())) {
-      dispatch({ type: "SET_MESSAGE", payload: "❌ Please fill in all aspirant names." });
-      dispatch({ type: "SET_SUBMITTING", payload: false });
-      return;
-    }
+if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim())) {
+  dispatch({ type: "SET_MESSAGE", payload: "❌ Please fill in all aspirant names for competitor questions." });
+  dispatch({ type: "SET_SUBMITTING", payload: false });
+  return;
+}
 
     const dynamicQuestionsValid = state.dynamicQuestions.every((q) => {
       if (!q.questionText.trim()) return false;
@@ -374,19 +376,17 @@ const CreateQuiz = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
+      <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex justify-center">
+  <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
+  Add Your Question of Choice
+</h2>
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
-          <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Add Questions to Poll ID: {state.pollId}
-        </h2>
+
         {state.message.includes("No poll ID provided") ? (
           <p className="text-center mt-6 font-medium text-red-600">{state.message}</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 pb-28">
-            <AspirantSection
-              aspirants={state.mainAspirants}
-              dispatch={dispatch}
-            />
-            {state.dynamicQuestions.map((question, index) => (
+    {state.dynamicQuestions.map((question, index) => (
               <DynamicQuestionSection
                 key={question.id}
                 question={question}
@@ -394,8 +394,8 @@ const CreateQuiz = () => {
                 dispatch={dispatch}
                 mainAspirants={state.mainAspirants}
               />
-            ))}
-            <FixedQuestionBar handleAddQuestion={handleAddQuestion} submitting={state.submitting} />
+            ))}     
+    <FixedQuestionBar handleAddQuestion={handleAddQuestion} submitting={state.submitting} />
           </form>
         )}
         {state.message && (
@@ -407,8 +407,6 @@ const CreateQuiz = () => {
     </div>
   );
 };
-
-// --- Reusable Sub-Components ---
 
 const AspirantSection: React.FC<{
   aspirants: Aspirant[];
@@ -538,21 +536,10 @@ const DynamicQuestionSection: React.FC<{
 
     {question.type === "single-choice" &&
       ((question as SingleChoiceQuestion).isCompetitorQuestion ? (
-        <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
-          <h5 className="text-md font-semibold text-gray-700 mb-2">Options (Aspirants)</h5>
-          <div className="flex flex-wrap gap-2">
-            {mainAspirants.length > 0 ? (
-              mainAspirants.map((comp, oIndex) => (
-                <span key={oIndex} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-sm">
-                  {comp.name}
-                </span>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500">No aspirants added yet. Add aspirants above to see options here.</p>
-            )}
-          </div>
-          <p className="text-xs text-gray-500 mt-2">These options are automatically populated from the main aspirants list.</p>
-        </div>
+       <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
+            <AspirantSection aspirants={mainAspirants} dispatch={dispatch} />
+      </div>
+   
       ) : (
         <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
           {(question as SingleChoiceQuestion).options.map((option, oIndex) => (

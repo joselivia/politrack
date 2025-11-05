@@ -231,7 +231,7 @@ const PollVotingPage = () => {
         setRespondentAge("");
         setSelections({});
         setMainCompetitorSelection(null);
-        setTimeout(() => router.push('/Admin/Thankyou'), 1000); 
+        setTimeout(() => router.replace('/Thankyou'), 1000); 
       } else {
         const errorData = await response.json();
         setError(

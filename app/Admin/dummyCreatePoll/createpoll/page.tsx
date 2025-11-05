@@ -10,7 +10,6 @@ import {
 import { useRouter } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
 import { Send, Megaphone } from "lucide-react";
-
 const CreatePoll = () => {
   const [title, setTitle] = useState("");
   const [presidential, setPresidential] = useState("");
@@ -29,7 +28,7 @@ const CreatePoll = () => {
   const wards = constituency ? countyAssemblyWardMap[constituency] : [];
   const showPresidentialExecutive = category === "Presidential";
 const isNational = region === "National";
-
+const [customCategory,setCustomCategory] = useState("");
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
@@ -57,7 +56,7 @@ const isNational = region === "National";
     }
     const payload = {
       title,
-      category,
+      category:category === "custom" ? customCategory : category,
       presidential: showPresidentialExecutive ? presidential : null,
       region,
       county: county || null,
@@ -135,35 +134,55 @@ const isNational = region === "National";
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="category"
-                  value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value);
-                    if (e.target.value !== "Presidential") {
-                      setPresidential("");
-                    }
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                  required
-                >
-                  <option value="" disabled>
-                    Select a category
-                  </option>
-                  {CATEGORY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
+<div>
+  <label
+    htmlFor="category"
+    className="block text-sm font-medium text-gray-700 mb-2"
+  >
+    Category <span className="text-red-500">*</span>
+  </label>
+
+  <div className="relative">
+    <select
+      id="category"
+      value={category}
+      onChange={(e) => {
+        const selected = e.target.value;
+        setCategory(selected);
+        if (selected !== "Presidential") {
+          setPresidential("");
+        }
+        if (selected !== "custom") {
+          setCustomCategory("");
+        }
+      }}
+      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
+      required
+    >
+      <option value="" disabled>
+        Select a category
+      </option>
+      {CATEGORY_OPTIONS.map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+      <option value="custom">➕ Add New Category</option>
+    </select>
+
+    {category === "custom" && (
+      <input
+        type="text"
+        value={customCategory}
+        onChange={(e) => setCustomCategory(e.target.value)}
+        placeholder="Type custom category..."
+        className="left-0 right-0 mt-2 p-3 border rounded-lg shadow-sm text-gray-800 bg-blue-50"
+        autoFocus
+      />
+    )}
+  </div>
+</div>
+
 
               {showPresidentialExecutive && (
                 <div>
@@ -346,7 +365,7 @@ const isNational = region === "National";
                   Submitting...
                 </div>
               ) : (
-                <div>
+                <div className="flex justify-center items-center">
                   <Send className="w-5 h-5 mr-2" /> Create Poll
                 </div>
               )}

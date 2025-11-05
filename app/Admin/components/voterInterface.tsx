@@ -47,7 +47,7 @@ const [region, setRegion] = useState(prefilledRegion);
 const [county, setCounty] = useState(prefilledCounty);
   const [constituency, setConstituency] = useState("");
   const [ward, setWard] = useState("");
-
+const [customOther, setCustomOther] = useState("");
   const constituencies = county ? countyConstituencyMap[county] : [];
   const wards = constituency ? countyAssemblyWardMap[constituency] : [];
 
@@ -160,8 +160,6 @@ if (region !== "National" && (!county || !constituency || !ward)) {
   setMessage("❌ Please complete your location details before voting.");
   return;
 }
-
-
     setIsVoting(true);
     setMessage(null);
 

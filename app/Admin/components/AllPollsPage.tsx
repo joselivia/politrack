@@ -126,14 +126,14 @@
                   <div className="mt-4 flex flex-col sm:flex-row gap-3">
                 {mounted && isAdmin && (
       <Link
-        href={`/PollVoting/${poll.id}`}
+        href={`/Admin/PollVoting/${poll.id}`}
         className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
       >
         View Poll & Vote
       </Link>
     )}
                     <Link
-                      href={`/PollVotingResults/${poll.id}`} 
+                      href={`/Admin/PollVotingResults/${poll.id}`} 
                       className="block text-indigo-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
                     >
                       View Responses
