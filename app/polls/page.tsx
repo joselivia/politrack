@@ -17,29 +17,15 @@ import {
   WifiOff,
   Share2,
 } from "lucide-react";
-
-export interface PollData {
-  id: number;
-  title: string;
-  presidential: string;
-  category: string;
-  region: string;
-  county: string;
-  constituency: string;
-  ward: string;
-  total_votes: number;
-  spoiled_votes: number;
-  published: boolean;
-  voting_expires_at: string;
-  created_at: string;
-}
+import FilterPollsPage from "../Admin/components/Filter";
+import { PollData } from "@/config/poll";
 
 const LivePolls = () => {
   const [polls, setPolls] = useState<PollData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-
+const [filteredPolls, setFilteredPolls] = useState<PollData[]>([]);
   const fetchAllPolls = async () => {
     try {
       setLoading(true);
@@ -92,6 +78,7 @@ const LivePolls = () => {
       }
 
       setPolls(data);
+       setFilteredPolls(data);
       setRetryCount(0); // Reset retry count on success
     } catch (err: any) {
       console.error("Fetch error:", err);
@@ -143,7 +130,6 @@ const LivePolls = () => {
     }
   };
 
-  // Get appropriate error icon based on error type
   const getErrorIcon = () => {
     const errorLower = error?.toLowerCase() || "";
     if (
@@ -268,13 +254,14 @@ const LivePolls = () => {
                 Live Polls & Results
               </h1>
             </div>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
               Real-time election data and polling results from across Kenya.
               Track live updates and voter statistics.
             </p>
-
+                  <FilterPollsPage allPolls={polls} setFilteredPolls={setFilteredPolls} />
             {/* Refresh button */}
             <div className="mt-4 flex justify-center">
+    
               <button
                 onClick={fetchAllPolls}
                 className="flex items-center px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
@@ -286,7 +273,7 @@ const LivePolls = () => {
           </div>
 
           {/* Polls Count */}
-          {polls.length > 0 && (
+          {filteredPolls.length > 0 && (
             <div className="text-center mb-6">
               <p className="text-gray-600">
                 Showing{" "}
@@ -300,7 +287,7 @@ const LivePolls = () => {
           <div className="flex justify-center">
             {polls.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl">
-                {polls.map((poll) => (
+                {filteredPolls.map((poll) => (
                   <div
                     key={poll.id}
                     className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"

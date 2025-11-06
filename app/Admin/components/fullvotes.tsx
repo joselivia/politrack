@@ -11,11 +11,12 @@ import {
   BarChart,
   XAxis,
   YAxis,
+  LineChart,
+  Line,
 } from "recharts";
 import { baseURL } from "@/config/baseUrl";
 import {
   BarChart2,
-  PieChart as PieChartIcon,
   Info,
   Users,
   Clock,
@@ -26,7 +27,6 @@ import {
   Printer,
   UserCircle2,
   ListChecks,
-  Clock10Icon,
 } from "lucide-react";
 import useSWR from "swr";
 import StrongSupport from "./StrongSupport";
@@ -56,6 +56,10 @@ export interface PollData {
   voting_expires_at: string;
   competitor_id: number;
 }
+interface VoteHistoryPoint {
+  time: string;
+  [candidateName: string]: string | number;
+}
 
 const COLORS = [
   "#1e40af",
@@ -83,6 +87,34 @@ const FullPollDetails = ({ id }: { id?: number }) => {
   const [selectedCandidate, setSelectedCandidate] = useState<number | null>(
     null
   );
+  const [voteHistory, setVoteHistory] = useState<VoteHistoryPoint[]>([]);
+const [timeInterval, setTimeInterval] = useState("15m");
+
+  useEffect(() => {
+  if (!id) return;
+  const evtSource = new EventSource(`${baseURL}/api/live-votes/live-stream/${id}?interval=${timeInterval}`);
+
+  evtSource.onmessage = (event) => {
+    const newVotes = JSON.parse(event.data);
+    const timestamp = new Date().toLocaleTimeString("en-KE", {
+      hour: "2-digit",
+      minute: "2-digit",
+      });
+
+    const newEntry: any = { time: timestamp };
+    newVotes.forEach((v: any) => {
+      const candidate = data?.results.find(c => c.id === v.candidate_id);
+      if (candidate) 
+        newEntry[candidate.name] = Number(v.vote_count);      
+    });
+
+    setVoteHistory(prev => [...prev, newEntry].slice(-200)); 
+  };
+
+  return () => evtSource.close();
+}, [id, data, timeInterval]);
+
+
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
     setIsAdmin(adminStatus === "true");
@@ -172,10 +204,16 @@ const FullPollDetails = ({ id }: { id?: number }) => {
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         {/* Header Section */}
         <div className="text-center mb-8 pb-4 border-b border-gray-200">
-          <p className="flex items-center justify-center text-red-600">
-            <Clock10Icon className="mr-3 " />
-            Count Down {countdown || "Not set"}
-          </p>
+              <span
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        countdown !== "Voting closed"
+                          ? "bg-green-100 text-green-800 border border-green-200"
+                          : "bg-gray-100 text-gray-800 border border-gray-200"
+                      }`}
+                    >
+                      <Clock className="w-3 h-3 inline mr-1" />
+                      {countdown || "Loading..."}
+                    </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 flex items-center justify-center">
             <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
             {data.title || " Poll Details"}
@@ -247,14 +285,11 @@ const FullPollDetails = ({ id }: { id?: number }) => {
             <div className="text-gray-600 text-sm">Turnout</div>
           </div>
         </div>
- <div className="mb-6"> <h2 className="text-2xl font-bold text-gray-800 flex items-center justify-center">
+ {/* <div className="mb-6"> <h2 className="text-2xl font-bold text-gray-800 flex items-center justify-center">
             <ListChecks className="w-6 h-6 mr-2 text-blue-600" />
             Candidate Strongholds
           </h2>
-          <StrongSupport pollId={data.id} /></div>
-         
-
-
+          <StrongSupport pollId={data.id} /></div>    */}
 
           {data.results.length === 0 ? (
           <div className="text-center text-gray-600 my-6 text-lg">
@@ -263,8 +298,51 @@ const FullPollDetails = ({ id }: { id?: number }) => {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Live Vote Tracker */}
+       
+<div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8">
+ 
+       <div className="flex justify-end mb-4">
+  <select
+    value={timeInterval}
+    onChange={(e) => setTimeInterval(e.target.value)}
+    className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+  >
+    <option value="15m">Last 15 minutes</option>
+    <option value="1h">Last 1 hour</option>
+    <option value="1d">Last 1 day</option>
+  </select>
+</div>
+  <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+    <BarChart2 className="w-5 h-5 mr-2 text-blue-600" />
+    Live Vote Tracker
+  </h2>
+   <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+  <ResponsiveContainer width="100%"   height={Math.max(chartData.length * 40, 300)}>
+    <LineChart data={voteHistory}>
+      <XAxis dataKey="time" />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+      {data?.results.map((c, index) => (
+        <Line
+          key={c.id}
+          type="monotone"
+          dataKey={c.name}
+          stroke={COLORS[index % COLORS.length]}
+          strokeWidth={2}
+          dot={false}
+          isAnimationActive={true}
+          animationDuration={800}
+        animationEasing="ease-in-out"
+        />
+      ))}
+    </LineChart>
+  </ResponsiveContainer></div>
+</div>
+
               {/* Pie Chart */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              {/* <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
                   <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" />
                   Vote Distribution
@@ -308,7 +386,7 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
+              </div> */}
 
               {/* Bar Chart */}
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
