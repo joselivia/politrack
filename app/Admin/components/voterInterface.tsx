@@ -47,9 +47,9 @@ const [region, setRegion] = useState(prefilledRegion);
 const [county, setCounty] = useState(prefilledCounty);
   const [constituency, setConstituency] = useState("");
   const [ward, setWard] = useState("");
-const [customOther, setCustomOther] = useState("");
   const constituencies = county ? countyConstituencyMap[county] : [];
   const wards = constituency ? countyAssemblyWardMap[constituency] : [];
+const [isRegistered, setIsRegistered] = useState(false);
 
   // --- Handle Mount ---
   useEffect(() => {
@@ -232,7 +232,7 @@ if (isVotingClosed) {
     !data.allow_multiple_votes &&
     message === "You have already voted in this poll.";
   return (
-    <div className="max-w-lg mx-auto p-4 min-h-screen">
+    <div className="max-w-2xl mx-auto p-4 min-h-screen">
       <div className="text-center">
         <h1 className="text-2xl font-bold">{data.title || "Cast Your Vote"}</h1>
         <p className="text-sm text-red-600 mt-2">
@@ -255,109 +255,127 @@ if (isVotingClosed) {
   </div>
 ) : (
        <div className="bg-white mt-6 p-4 rounded-lg shadow-md">
-        <h1 className="text-lg font-semibold mb-4">Enter Your Details.</h1>
-            {/* 🧍‍♂️ Voter Details Section */}
-        <div className="space-y-4 mb-6">
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          />
+    <h1 className="text-lg font-semibold mb-4">Enter Voter Details</h1>
+<div className="space-y-4 mb-6">
+  <input
+    type="text"
+    placeholder="Full Name"
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+    className="w-full p-3 border border-gray-300 rounded-lg"
+  />
+<div className="flex items-center gap-3">
+  <select
+    value={gender}
+    onChange={(e) => setGender(e.target.value)}
+    className="w-full p-3 border border-gray-300 rounded-lg"
+  >
+    <option value="">Select Gender</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Other">Other / Prefer not to say</option>
+  </select>
 
-          <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-          >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other / Prefer not to say</option>
-          </select>
+  {region !== "National" && (
+    <>
+      <select
+        value={constituency}
+        onChange={(e) => {
+          setConstituency(e.target.value);
+          setWard("");
+        }}
+        disabled={!county}
+        className="w-full p-3 border border-gray-300 rounded-lg"
+      >
+        <option value="">Select Constituency</option>
+        {constituencies.map((cst) => (
+          <option key={cst} value={cst}>
+            {cst}
+          </option>
+        ))}
+      </select>
 
-
-<div className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
-  {region}
+      <select
+        value={ward}
+        onChange={(e) => setWard(e.target.value)}
+        disabled={!constituency}
+        className="w-full p-3 border border-gray-300 rounded-lg"
+      >
+        <option value="">Select Ward</option>
+        {wards.map((w) => (
+          <option key={w} value={w}>
+            {w}
+          </option>
+        ))}
+      </select>
+    </>
+  )}
+</div>
+  {/* ✅ Continue Button */}
+  {!isRegistered && (
+<button
+  onClick={() => {
+    if (isRegistered) return; // prevent re-click
+    if (!name || !gender || !region) {
+      setMessage("❌ Please fill all required fields.");
+      return;
+    }
+    if (region !== "National" && (!county || !constituency || !ward)) {
+      setMessage("❌ Please complete location details.");
+      return;
+    }
+    setIsRegistered(true);
+    setMessage(null);
+  }}
+  disabled={isRegistered || isVotingClosed}
+  className={`w-full py-2 px-4 rounded-full text-white font-medium transition-colors ${
+    isRegistered
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-blue-600 hover:bg-blue-700"
+  }`}
+>
+  {isRegistered ? "Registered ✅" : "Continue to Vote"}
+</button>
+  )}
 </div>
 
-{region !== "National" && (
-  <>
-<div className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50">
-  {county}
-</div>
-    <select
-      value={constituency}
-      onChange={(e) => {
-        setConstituency(e.target.value);
-        setWard("");
-      }}
-      disabled={!county}
-      className="w-full p-3 border border-gray-300 rounded-lg"
-    >
-      <option value="">Select Constituency</option>
-      {constituencies.map((cst) => (
-        <option key={cst} value={cst}>
-          {cst}
-        </option>
-      ))}
-    </select>
+{isRegistered && (
+  <div className="space-y-2 mt-4">
+    <h2 className="text-lg font-semibold text-gray-800 mb-2">
+      {competitorQuestion || "Select Your Candidate"}
+    </h2>
 
-    <select
-      value={ward}
-      onChange={(e) => setWard(e.target.value)}
-      disabled={!constituency}
-      className="w-full p-3 border border-gray-300 rounded-lg"
+    {data.results.map((candidate) => (
+      <label key={candidate.id} className="flex items-center space-x-2">
+        <input
+          type="radio"
+          name="candidate"
+          value={candidate.id}
+          checked={selectedCandidateId === candidate.id}
+          onChange={() => setSelectedCandidateId(candidate.id)}
+          className="text-indigo-600 focus:ring-indigo-500"
+          disabled={isVoting || isVotingClosed}
+        />
+        <span>{candidate.name}</span>
+      </label>
+    ))}
+
+    <button
+      onClick={handleVote}
+      disabled={isVoting || !selectedCandidateId || isVotingClosed}
+      className="mt-6 w-full bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
     >
-      <option value="">Select Ward</option>
-      {wards.map((w) => (
-        <option key={w} value={w}>
-          {w}
-        </option>
-      ))}
-    </select>
-  </>
+      {isVoting ? "Voting..." : "Submit Vote"}
+    </button>
+
+    {message && (
+      <p className="mt-3 text-center text-sm font-medium text-gray-700">
+        {message}
+      </p>
+    )}
+  </div>
 )}
-
-        </div>
-
-        {/* 🗳️ Candidate Selection */}
-        <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">
-          {competitorQuestion || "Select Your Candidate"}
-        </h2>
-          {data.results.map((candidate) => (
-            <label key={candidate.id} className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="candidate"
-                value={candidate.id}
-                checked={selectedCandidateId === candidate.id}
-                onChange={() => setSelectedCandidateId(candidate.id)}
-                className="text-indigo-600 focus:ring-indigo-500"
-                disabled={isVoting || isVotingClosed}
-              />
-              <span>{candidate.name}</span>
-            </label>
-          ))}
-        </div>
-
-        {/* Submit */}
-        <button
-          onClick={handleVote}
-          disabled={isVoting || !selectedCandidateId || isVotingClosed}
-          className="mt-6 w-full bg-green-600 text-white py-2 px-4 rounded-full hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isVoting ? "Voting..." : "Submit Vote"}
-        </button>
-
-        {message && (
-          <p className="mt-3 text-center text-sm font-medium text-gray-700">
-            {message}
-          </p>
-        )}
-      </div>
+</div>
 )}
     </div>
   );

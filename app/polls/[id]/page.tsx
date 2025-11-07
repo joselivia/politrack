@@ -31,7 +31,7 @@ import {
 } from "recharts";
 import { useParams } from "next/navigation";
 import CommentSection from "@/components/CommentSection";
-import { VoteHistoryPoint } from "@/app/Admin/components/fullvotes";
+
 
 export interface Candidate {
   id: number;
@@ -68,7 +68,10 @@ const COLORS = [
   "#be123c",
   "#16a34a",
 ];
-
+export interface VoteHistoryPoint {
+  time: string;
+  [candidateName: string]: string | number;
+}
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const LiveDetailsReport = ({ compact = false }: any) => {
@@ -263,33 +266,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Vote Statistics */}
-        <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
-          <div className="text-center bg-blue-50 rounded p-2">
-            <div className="font-bold text-blue-700">
-              {data.totalVotes.toLocaleString()}
-            </div>
-            <div className="text-gray-500">Registered</div>
-          </div>
-          <div className="text-center bg-green-50 rounded p-2">
-            <div className="font-bold text-green-700">
-              {totalValidVotes.toLocaleString()}
-            </div>
-            <div className="text-gray-500">Valid Votes</div>
-          </div>
-          <div className="text-center bg-red-50 rounded p-2">
-            <div className="font-bold text-red-700">
-              {totalSpoiledVotes.toLocaleString()}
-            </div>
-            <div className="text-gray-500">Spoiled</div>
-          </div>
-          <div className="text-center bg-purple-50 rounded p-2">
-            <div className="font-bold text-purple-700">
-              {turnoutPercentage}%
-            </div>
-            <div className="text-gray-500">Turnout</div>
-          </div>
-        </div>
 
         {/* Candidates List */}
         {chartData.length === 0 ? (
@@ -442,16 +418,16 @@ useEffect(() => {
         <div className="text-center bg-blue-50 rounded-lg p-3 border border-blue-100">
           <Users className="w-5 h-5 text-blue-600 mx-auto mb-1" />
           <div className="font-bold text-blue-700 text-lg">
-            {data.totalVotes.toLocaleString()}
+          n=({data.totalVotes.toLocaleString()})
           </div>
-          <div className="text-gray-600 text-sm">Registered Voters</div>
+          <div className="text-gray-600 text-sm">Sample Size</div>
         </div>
         <div className="text-center bg-green-50 rounded-lg p-3 border border-green-100">
           <ListChecks className="w-5 h-5 text-green-600 mx-auto mb-1" />
           <div className="font-bold text-green-700 text-lg">
-            {totalValidVotes.toLocaleString()}
+            n=({totalValidVotes.toLocaleString()})
           </div>
-          <div className="text-gray-600 text-sm">Valid Votes</div>
+          <div className="text-gray-600 text-sm">Sample Size</div>
         </div>
         <div className="text-center bg-red-50 rounded-lg p-3 border border-red-100">
           <X className="w-5 h-5 text-red-600 mx-auto mb-1" />
@@ -581,7 +557,7 @@ useEffect(() => {
                     Party
                   </th>
                   <th className="py-3 px-4 font-semibold text-left text-xs">
-                    Percentage
+                    % Chance
                   </th>
                   <th className="py-3 px-4 font-semibold text-left text-xs">
                     Progress

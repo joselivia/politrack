@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import FullPollDetails from "../../components/fullvotes";
+import LiveDetailsReport from "@/app/polls/[id]/page";
 
 
 export default function FullVotePage() {
@@ -12,5 +12,5 @@ export default function FullVotePage() {
     return <div className="text-red-500 text-center p-4">❌ Invalid poll ID in URL</div>;
   }
 
-  return <FullPollDetails id={pollId} />;
+  return <LiveDetailsReport id={pollId} />;
 }
