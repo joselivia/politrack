@@ -127,7 +127,6 @@ useEffect(() => {
   evtSource.onmessage = (event) => {
     const newVotes = JSON.parse(event.data);
     if (!Array.isArray(newVotes)) return;
-
     const timestamp = new Date().toLocaleTimeString("en-KE", {
       hour: "2-digit",
       minute: "2-digit",
@@ -145,7 +144,7 @@ useEffect(() => {
       if (exists) {
         return prev.map((p) => (p.time === newEntry.time ? newEntry : p));
       } else {
-        return [...prev, newEntry].slice(-1500);
+        return [...prev, newEntry].slice(-1000);
       }
     });
   };
@@ -418,7 +417,7 @@ useEffect(() => {
         <div className="text-center bg-blue-50 rounded-lg p-3 border border-blue-100">
           <Users className="w-5 h-5 text-blue-600 mx-auto mb-1" />
           <div className="font-bold text-blue-700 text-lg">
-          n=({data.totalVotes.toLocaleString()})
+          N=({data.totalVotes.toLocaleString()})
           </div>
           <div className="text-gray-600 text-sm">Sample Size</div>
         </div>
@@ -464,10 +463,13 @@ useEffect(() => {
     value={timeInterval}
     onChange={(e) => setTimeInterval(e.target.value)}
     className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
-  >
+  > <option value="1m">Last 1 minute</option>
     <option value="15m">Last 15 minutes</option>
+    <option value="30m">Last 30 minutes</option>
     <option value="1h">Last 1 hour</option>
     <option value="1d">Last 1 day</option>
+    <option value="1w">Last 1 week</option>
+    <option value="1mon">Last 1 month</option>
   </select>
 </div>
   <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
@@ -502,44 +504,43 @@ useEffect(() => {
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
               <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
                 <BarChart2 className="w-5 h-5 mr-2 text-green-600" />
-                Votes by Candidate
+                % Chance By Candidate
               </h2>
     <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
   <ResponsiveContainer width="100%" height={Math.max(chartData.length * 40, 300)}>
-                <BarChart
-                  data={chartData}
-                  layout="vertical"
-                  margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
-                >
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tickLine={false}
-                    axisLine={false}
-                    width={120}
-                    tickFormatter={(name)=>
-                      name.length > 15 ? name.substring(0,15) + "..":name
-                    }
-                  />
-                  <XAxis
-                    type="number"
-                    tickFormatter={(v) => v.toLocaleString()}
-               
-                  />
-                  <Tooltip
-                    formatter={(value: number) =>
-                      `${value.toLocaleString()} votes`
-                    }
-                  />
-                  <Bar dataKey="votes" barSize={20} radius={[0, 5, 5, 0]}>
-                    {chartData.map((entry, index) => (
-                      <Cell
-                        key={`bar-cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
+<BarChart
+  data={chartData}
+  layout="vertical"
+  margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+>
+  <YAxis
+    dataKey="name"
+    type="category"
+    tickLine={false}
+    axisLine={false}
+    width={120}
+    tickFormatter={(name) =>
+      name.length > 15 ? name.substring(0, 15) + ".." : name
+    }
+  />
+  <XAxis
+    type="number"
+    domain={[0, 100]}
+    tickFormatter={(v) => `${v}%`}
+  />
+  <Tooltip
+    formatter={(value: number) => `${value.toFixed(2)}%`}
+  />
+  <Bar dataKey="percentage" barSize={20} radius={[0, 5, 5, 0]}>
+    {chartData.map((entry, index) => (
+      <Cell
+        key={`bar-cell-${index}`}
+        fill={COLORS[index % COLORS.length]}
+      />
+    ))}
+  </Bar>
+</BarChart>
+
               </ResponsiveContainer></div>
             </div>
           </div>

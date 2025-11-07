@@ -196,7 +196,7 @@ Dagoretti_South: ['Mutu-ini', 'Ngando', 'Riruta', 'Uthiru/Ruthimitu', 'Waithaka'
   Mathioya: ['Gitugi', 'Kiru', 'Kamacharia'],
   Kiharu: ['Wangu', 'Mugoiri', 'Mbari Ya Ngai', 'Township', 'Muruka', 'Kagundu-Ini'],
   Kigumo: ['Kahumbu', 'Kinyona', 'Kigumo', 'Kangari'],
-  Maragua: ['Kimorori/Wempa', 'Makuyu', 'Nginda', 'Ng’araria', 'Ichagaki', 'Nginda'],
+  Maragua: ['Kimorori/Wempa', 'Makuyu', 'Ng’araria', 'Ichagaki', 'Nginda'],
   Kandara: ['Ngararia', 'Muruka', 'Kagundu-Ini', 'Gaichanjiru', 'Ithiru', 'Ruchu'],
   Gatanga: ['Ithanga', 'Kakuzi/Mitubiri', 'Mugumo-Ini', 'Kihumbuini', 'Gatanga', 'Kariara'],
 

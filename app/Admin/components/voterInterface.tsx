@@ -5,7 +5,6 @@ import axios from "axios";
 import { baseURL } from "@/config/baseUrl";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  regionCountyMap,
   countyConstituencyMap,
   countyAssemblyWardMap,
 } from "../dummyCreatePoll/createpoll/Places";
@@ -263,13 +262,14 @@ if (isVotingClosed) {
     value={name}
     onChange={(e) => setName(e.target.value)}
     className="w-full p-3 border border-gray-300 rounded-lg"
+    required
   />
-<div className="flex items-center gap-3">
+<div className="flex flex-col sm:flex-row items-center gap-3">
   <select
     value={gender}
     onChange={(e) => setGender(e.target.value)}
     className="w-full p-3 border border-gray-300 rounded-lg"
-  >
+  required>
     <option value="">Select Gender</option>
     <option value="Male">Male</option>
     <option value="Female">Female</option>
@@ -315,27 +315,31 @@ if (isVotingClosed) {
   {!isRegistered && (
 <button
   onClick={() => {
-    if (isRegistered) return; // prevent re-click
-    if (!name || !gender || !region) {
-      setMessage("❌ Please fill all required fields.");
-      return;
-    }
-    if (region !== "National" && (!county || !constituency || !ward)) {
-      setMessage("❌ Please complete location details.");
-      return;
-    }
+    if (isRegistered) return;
     setIsRegistered(true);
     setMessage(null);
   }}
-  disabled={isRegistered || isVotingClosed}
+  disabled={
+    isRegistered ||
+    isVotingClosed ||
+    !name ||
+    !gender ||
+    !region ||
+    (region !== "National" && (!county || !constituency || !ward))
+  }
   className={`w-full py-2 px-4 rounded-full text-white font-medium transition-colors ${
-    isRegistered
+    isRegistered ||
+    !name ||
+    !gender ||
+    !region ||
+    (region !== "National" && (!county || !constituency || !ward))
       ? "bg-gray-400 cursor-not-allowed"
       : "bg-blue-600 hover:bg-blue-700"
   }`}
 >
   {isRegistered ? "Registered ✅" : "Continue to Vote"}
 </button>
+
   )}
 </div>
 

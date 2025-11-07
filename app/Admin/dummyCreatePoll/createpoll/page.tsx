@@ -59,9 +59,9 @@ const [customCategory,setCustomCategory] = useState("");
       category:category === "custom" ? customCategory : category,
       presidential: showPresidentialExecutive ? presidential : null,
       region,
-      county: county || null,
-      constituency: constituency || null,
-      ward: ward || null,
+      county: county || "All",
+      constituency: constituency || "All",
+      ward: ward || "All",
       voting_expires_at: expiryTimestamp,
     };
 

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { PollData } from "@/config/poll";
+import { CATEGORY_OPTIONS } from "../dummyCreatePoll/createpoll/Places";
 
 interface Props {
   allPolls: PollData[];
@@ -23,10 +24,11 @@ useEffect(() => {
     return (
       (search === "" ||
         (poll.title?.toLowerCase() || "").includes(search.toLowerCase()) ||
-        (poll.presidential?.toLowerCase() || "").includes(search.toLowerCase())|| (poll.category?.toLowerCase() || "").includes(search.toLowerCase()) ) &&
+        (poll.presidential?.toLowerCase() || "").includes(search.toLowerCase())) &&
       (region === "" || poll.region === region) &&
       (county === "" || poll.county === county) &&
-      (pollstatus === "" || status === pollstatus)
+      (pollstatus === "" || status === pollstatus) &&
+      (category === "" || poll.category === category)
     
     );
   });
@@ -44,6 +46,22 @@ useEffect(() => {
   };
 
   return (
+    <div className="p-5">
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
+        {CATEGORY_OPTIONS.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setCategory(category === cat ? "" : cat)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              category === cat
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
     <div className="mb-5 flex flex-wrap justify-center  gap-3 items-center ">
       <div className="flex items-center bg-gray-50 border border-gray-300 rounded-lg flex-grow max-w-md">
         <input
@@ -92,14 +110,14 @@ useEffect(() => {
       >
         <option value="">All Counties</option>
         {[
-          "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo Marakwet", "Embu",
+          "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo_Marakwet", "Embu",
           "Garissa", "Homa Bay", "Isiolo", "Kajiado", "Kakamega", "Kericho",
           "Kiambu", "Kilifi", "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale",
           "Laikipia", "Lamu", "Machakos", "Makueni", "Mandera", "Marsabit",
           "Meru", "Migori", "Mombasa", "Muranga", "Nairobi", "Nakuru", "Nandi",
           "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu", "Siaya",
-          "Taita Taveta", "Tana River", "Tharaka Nithi", "Trans Nzoia",
-          "Turkana", "Uasin Gishu", "Vihiga", "Wajir", "West Pokot",
+          "Taita_Taveta", "Tana_River", "Tharaka_Nithi", "Trans_Nzoia",
+          "Turkana", "Uasin_Gishu", "Vihiga", "Wajir", "West_Pokot",
         ].map((c) => (
           <option key={c}>{c}</option>
         ))}
@@ -110,6 +128,6 @@ useEffect(() => {
       >
         Clear
       </button>
-    </div>
+    </div></div>
   );
 }

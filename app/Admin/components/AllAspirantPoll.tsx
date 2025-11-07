@@ -199,8 +199,8 @@ const AllApirantPollPage = () => {
                 <div className="text-sm text-gray-500 space-y-1">
                   <p className="flex items-center">
                     <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                    Ward: {poll.ward || "N/A"}, Const:{" "}
-                    {poll.constituency || "N/A"}, County: {poll.county || "N/A"}
+                    Ward: {poll.ward || "All" }, Const:{" "}
+                    {poll.constituency ||"All" }, County: {poll.county || "All" }
                   </p>
                   <p className="flex items-center">
                     <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />
