@@ -2,15 +2,15 @@ export interface Candidate {
   id?: number;
   name: string;
   party?: string;
+  profile?: string | File | null;
   votes?: number;
 }
-
 export interface Question {
   id?: number;
-  text: string;
-  options?: string[];
+  question_text: string;
+  type: string;
+  is_competitor_question?: boolean;
 }
-
 export interface PollData {
   id: number;
   title: string;
@@ -21,11 +21,11 @@ export interface PollData {
   constituency?: string;
   ward?: string;
   total_votes: number;
-  spoiled_votes?: number;
-  published: boolean;
   voting_expires_at: string;
-  created_at: string | Date;
+  spoiled_votes?: number;
   results?: Candidate[];
   competitors?: Candidate[];
   questions?: Question[];
+  published: boolean;
+  created_at: Date | string;
 }

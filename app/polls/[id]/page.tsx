@@ -19,8 +19,6 @@ import {
 import useSWR from "swr";
 import {
   ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
   Tooltip,
   Legend,
@@ -28,9 +26,12 @@ import {
   BarChart,
   XAxis,
   YAxis,
+  Line,
+  LineChart,
 } from "recharts";
 import { useParams } from "next/navigation";
 import CommentSection from "@/components/CommentSection";
+import { VoteHistoryPoint } from "@/app/Admin/components/fullvotes";
 
 export interface Candidate {
   id: number;
@@ -56,7 +57,6 @@ export interface PollData {
   created_at: Date | string;
   voting_expires_at: string;
 }
-
 const COLORS = [
   "#1e40af",
   "#9333ea",
@@ -83,7 +83,77 @@ const LiveDetailsReport = ({ compact = false }: any) => {
 
   const [showAll, setShowAll] = useState(false);
   const [countdown, setCountdown] = useState<string>("");
+  const [voteHistory, setVoteHistory] = useState<VoteHistoryPoint[]>([]);
+const [timeInterval, setTimeInterval] = useState("15m");
 
+useEffect(() => {
+  if (!pollId) return;
+
+  const fetchInitialHistory = async () => {
+    const res = await fetch(`${baseURL}/api/live-votes/history/${pollId}?interval=${timeInterval}`);
+    const rows = await res.json();
+
+    const grouped: VoteHistoryPoint[] = [];
+
+    rows.forEach((row: any) => {
+      const time = new Date(row.recorded_time).toLocaleTimeString("en-KE", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      let point = grouped.find(p => p.time === time);
+      if (!point) {
+        point = { time };
+        grouped.push(point);
+      }
+
+      const candidate = data?.results.find(c => c.id === row.competitor_id);
+      if (candidate) {
+        point[candidate.name] = Number(row.cumulative_votes ?? 0);
+      }
+    });
+
+    setVoteHistory(grouped);
+  };
+
+  fetchInitialHistory();
+
+  // --- SSE for live updates ---
+  const evtSource = new EventSource(`${baseURL}/api/live-votes/live-stream/${pollId}?interval=${timeInterval}`);
+
+  evtSource.onmessage = (event) => {
+    const newVotes = JSON.parse(event.data);
+    if (!Array.isArray(newVotes)) return;
+
+    const timestamp = new Date().toLocaleTimeString("en-KE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const newEntry: any = { time: timestamp };
+
+    data?.results.forEach((candidate) => {
+      const found = newVotes.find((v: any) => v.competitor_id === candidate.id);
+      newEntry[candidate.name] = Number(found?.cumulative_votes ?? 0);
+    });
+
+    setVoteHistory((prev) => {
+      const exists = prev.some((p) => p.time === newEntry.time);
+      if (exists) {
+        return prev.map((p) => (p.time === newEntry.time ? newEntry : p));
+      } else {
+        return [...prev, newEntry].slice(-1500);
+      }
+    });
+  };
+
+  evtSource.onerror = (e) => {
+    console.error("SSE error:", e);
+    evtSource.close();
+  };
+
+  return () => evtSource.close();
+}, [pollId, timeInterval, data]);
   // Countdown timer for voting expiration
   useEffect(() => {
     if (!data?.voting_expires_at) return;
@@ -411,41 +481,46 @@ const LiveDetailsReport = ({ compact = false }: any) => {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Pie Chart */}
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" />
-                Vote Distribution
-              </h2>
-     <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-  <ResponsiveContainer width="100%" height={Math.max(chartData.length * 40, 300)}>
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    dataKey="votes"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-label={({ percentage }:any) => `(${percentage.toFixed(1)}%)`}
-                    labelLine={false}
-                  >
-                    {chartData.map((_, index) => (
-                      <Cell
-                        key={`pie-cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number, name: string, props: any) => [
-                      `${value.toLocaleString()} votes`,
-                      props.payload.name,
-                    ]}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer></div>
-            </div>
+<div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8">
+ 
+       <div className="flex justify-end mb-4">
+  <select
+    value={timeInterval}
+    onChange={(e) => setTimeInterval(e.target.value)}
+    className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+  >
+    <option value="15m">Last 15 minutes</option>
+    <option value="1h">Last 1 hour</option>
+    <option value="1d">Last 1 day</option>
+  </select>
+</div>
+  <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+    <BarChart2 className="w-5 h-5 mr-2 text-blue-600" />
+    Live Vote Tracker
+  </h2>
+   <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+  <ResponsiveContainer width="100%"   height={Math.max(chartData.length * 40, 300)}>
+    <LineChart data={voteHistory}>
+      <XAxis dataKey="time" />
+      <YAxis allowDecimals={false}/>
+      <Tooltip />
+       <Legend />
+      {data?.results.map((c, index) => (
+        <Line
+          key={c.id}
+          type="monotone"
+          dataKey={c.name}
+          stroke={COLORS[index % COLORS.length]}
+          strokeWidth={2.5}
+          dot={false}
+          isAnimationActive={true}
+          animationDuration={700}
+        animationEasing="ease-in-out"
+        />
+      ))}
+    </LineChart>
+  </ResponsiveContainer></div>
+</div>
 
             {/* Bar Chart */}
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">

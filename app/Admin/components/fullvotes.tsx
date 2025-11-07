@@ -56,7 +56,7 @@ export interface PollData {
   voting_expires_at: string;
   competitor_id: number;
 }
-interface VoteHistoryPoint {
+export interface VoteHistoryPoint {
   time: string;
   [candidateName: string]: string | number;
 }
@@ -90,29 +90,74 @@ const FullPollDetails = ({ id }: { id?: number }) => {
   const [voteHistory, setVoteHistory] = useState<VoteHistoryPoint[]>([]);
 const [timeInterval, setTimeInterval] = useState("15m");
 
-  useEffect(() => {
+useEffect(() => {
   if (!id) return;
+
+  const fetchInitialHistory = async () => {
+    const res = await fetch(`${baseURL}/api/live-votes/history/${id}?interval=${timeInterval}`);
+    const rows = await res.json();
+
+    const grouped: VoteHistoryPoint[] = [];
+
+    rows.forEach((row: any) => {
+      const time = new Date(row.recorded_time).toLocaleTimeString("en-KE", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      let point = grouped.find(p => p.time === time);
+      if (!point) {
+        point = { time };
+        grouped.push(point);
+      }
+
+      const candidate = data?.results.find(c => c.id === row.competitor_id);
+      if (candidate) {
+        point[candidate.name] = Number(row.cumulative_votes ?? 0);
+      }
+    });
+
+    setVoteHistory(grouped);
+  };
+
+  fetchInitialHistory();
+
+  // --- SSE for live updates ---
   const evtSource = new EventSource(`${baseURL}/api/live-votes/live-stream/${id}?interval=${timeInterval}`);
 
   evtSource.onmessage = (event) => {
     const newVotes = JSON.parse(event.data);
+    if (!Array.isArray(newVotes)) return;
+
     const timestamp = new Date().toLocaleTimeString("en-KE", {
       hour: "2-digit",
       minute: "2-digit",
-      });
-
-    const newEntry: any = { time: timestamp };
-    newVotes.forEach((v: any) => {
-      const candidate = data?.results.find(c => c.id === v.candidate_id);
-      if (candidate) 
-        newEntry[candidate.name] = Number(v.vote_count);      
     });
 
-    setVoteHistory(prev => [...prev, newEntry].slice(-200)); 
+    const newEntry: any = { time: timestamp };
+
+    data?.results.forEach((candidate) => {
+      const found = newVotes.find((v: any) => v.competitor_id === candidate.id);
+      newEntry[candidate.name] = Number(found?.cumulative_votes ?? 0);
+    });
+
+    setVoteHistory((prev) => {
+      const exists = prev.some((p) => p.time === newEntry.time);
+      if (exists) {
+        return prev.map((p) => (p.time === newEntry.time ? newEntry : p));
+      } else {
+        return [...prev, newEntry].slice(-1500);
+      }
+    });
+  };
+
+  evtSource.onerror = (e) => {
+    console.error("SSE error:", e);
+    evtSource.close();
   };
 
   return () => evtSource.close();
-}, [id, data, timeInterval]);
+}, [id, timeInterval, data]);
 
 
   useEffect(() => {
@@ -321,77 +366,28 @@ const [timeInterval, setTimeInterval] = useState("15m");
   <ResponsiveContainer width="100%"   height={Math.max(chartData.length * 40, 300)}>
     <LineChart data={voteHistory}>
       <XAxis dataKey="time" />
-      <YAxis />
+      <YAxis allowDecimals={false}/>
       <Tooltip />
-      <Legend />
+       <Legend />
       {data?.results.map((c, index) => (
         <Line
           key={c.id}
           type="monotone"
           dataKey={c.name}
           stroke={COLORS[index % COLORS.length]}
-          strokeWidth={2}
+          strokeWidth={2.5}
           dot={false}
           isAnimationActive={true}
-          animationDuration={800}
+          animationDuration={700}
         animationEasing="ease-in-out"
         />
       ))}
     </LineChart>
   </ResponsiveContainer></div>
 </div>
-
-              {/* Pie Chart */}
-              {/* <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                  <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" />
-                  Vote Distribution
-                </h2>
-                <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-                  <ResponsiveContainer
-                    width="100%"
-                    height={Math.max(chartData.length * 40, 300)}
-                  >
-                    <PieChart>
-                      <Pie
-                        data={chartData}
-                        dataKey="votes"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        label={({ percentage }: any) =>
-                          `(${percentage.toFixed(1)}%)`
-                        }
-                        labelLine={false}
-                      >
-                        {chartData.map((_, index) => (
-                          <Cell
-                            key={`pie-cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(
-                          value: number,
-                          name: string,
-                          props: any
-                        ) => [
-                          `${value.toLocaleString()} votes`,
-                          props.payload.name,
-                        ]}
-                      />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div> */}
-
-              {/* Bar Chart */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                  <BarChart2 className="w-5 h-5 mr-2 text-green-600" />
+       <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+           <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+               <BarChart2 className="w-5 h-5 mr-2 text-green-600" />
                   Votes by Candidate
                 </h2>
                 <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">

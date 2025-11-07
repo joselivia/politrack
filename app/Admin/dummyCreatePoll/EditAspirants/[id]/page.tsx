@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
 import { Send } from "lucide-react";
-import { PollData } from "@/app/Admin/components/AllAspirantPoll";
+import { PollData } from "@/config/poll";
 import {
   countyAssemblyWardMap,
   countyConstituencyMap,
