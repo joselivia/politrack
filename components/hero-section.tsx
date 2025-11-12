@@ -56,7 +56,6 @@ interface ChartData {
   color?: string;
   count?: number;
   [key: string]: string | number | undefined;
-
 }
 
 const fetcher = (url: string) =>
@@ -117,7 +116,6 @@ export default function HeroSection() {
   const [regionData, setRegionData] = useState<ChartData[]>([]);
   const [isClient, setIsClient] = useState(false);
 
-  // Set isClient to true when component mounts on client
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -273,150 +271,44 @@ export default function HeroSection() {
   }
 
   return (
-    <section className="relative py-8 sm:py-12 lg:py-14 xl:py-24 overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
+    <section className="py-2 sm:py-4 lg:py-4 xl:py-4 overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Enhanced background elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(246,210,7,0.05),transparent_50%)]"></div>
+      {/* <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(246,210,7,0.05),transparent_50%)]"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,0,0,0.03),transparent_50%)]"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div> */}
 
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
-          {/* Left Side - Enhanced Content */}
-          <div className="space-y-6 sm:space-y-8 lg:space-y-12">
-            <div className="space-y-4 sm:space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-accent/10 border border-accent/20 mb-2 sm:mb-4">
-                <Target className="h-3 w-3 sm:h-4 sm:w-4 text-accent-foreground" />
-                <span className="text-xs sm:text-sm font-semibold text-accent-foreground uppercase tracking-wide">
-                  Live Polls Data
-                </span>
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black text-balance leading-tight tracking-tight">
-                Decoding
-                <span className="bg-gradient-to-r from-accent to-foreground bg-clip-text text-transparent block">
-                  Africa&apos;s Pulse
-                </span>
-              </h1>
-
-              <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground font-medium text-pretty leading-relaxed">
-                Data-Driven Insights for Political &amp; Socio-Economic Strategy
-              </p>
-            </div>
-
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl border-l-4 border-accent pl-4 sm:pl-6 py-1 sm:py-2">
-              Politrack Africa provides real-time election data, live polling
-              results, and comprehensive analytics from active elections across
-              the continent.
-            </p>
-
-            {/* Enhanced CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Button
-                size="lg"
-                className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={() => mutate()}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                    Refreshing...
-                  </>
-                ) : (
-                  <>
-                    Refresh Data
-                    <RefreshCw className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={() => (window.location.href = "/polls")}
-                variant="outline"
-                size="lg"
-                className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 border-2 border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground font-semibold bg-background/80 backdrop-blur-sm transition-all duration-300"
-              >
-                View All Polls
-              </Button>
-            </div>
-
-            {/* Enhanced Stats Section */}
-            {isLoading ? (
-              <StatsSkeleton />
-            ) : error ? (
-              <div className="text-center py-8 text-destructive">
-                <p>Failed to load data. Please try again.</p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => mutate()}
-                >
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-6 sm:pt-8">
-                {[
-                  {
-                    icon: Globe,
-                    value: totalActivePolls,
-                    label: "Active Polls",
-                    description: "Live elections",
-                  },
-                  {
-                    icon: Users,
-                    value: totalVotes.toLocaleString(),
-                    label: "Total Votes",
-                    description: "Cast so far",
-                  },
-                  {
-                    icon: Vote,
-                    value: validVotes.toLocaleString(),
-                    label: "Valid Votes",
-                    description: "Counted",
-                  },
-                  {
-                    icon: Clock,
-                    value: getNearestCountdown(),
-                    label: "Next Close",
-                    description: "Nearest poll",
-                  },
-                ].map((stat, index) => (
-                  <div key={index} className="text-center group">
-                    <div className="flex justify-center mb-2 sm:mb-4">
-                      <div className="p-2 sm:p-3 bg-accent/10 rounded-xl sm:rounded-2xl group-hover:bg-accent/20 transition-colors duration-300">
-                        <stat.icon className="h-4 w-4 sm:h-6 sm:w-6 text-accent-foreground" />
-                      </div>
-                    </div>
-                    <div className="text-xl sm:text-2xl font-black text-foreground mb-1">
-                      {stat.value}
-                    </div>
-                    <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-                      {stat.label}
-                    </div>
-                    <div className="text-xs text-muted-foreground/70">
-                      {stat.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Last Updated - Fixed hydration issue */}
-            <div className="text-xs font-semibold text-green-600 flex items-center justify-center sm:justify-start">
-              <Clock className="h-3 w-3 mr-1" />
-              Last updated:{" "}
-              {isClient && lastUpdated
-                ? lastUpdated.toLocaleTimeString()
-                : "Loading..."}
-              {isLoading && <Loader2 className="h-3 w-3 ml-2 animate-spin" />}
-            </div>
+      <div className="container mx-auto px-4 sm:px-4 space-x-4 space-y-5 sm:space-y-6 lg:space-y-8 xl:space-y-10 2xl:space-y-12">
+        {/* Left Side - Enhanced Content */}
+        <div className="flex flex-col items-center sm:items-start">
+          <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 rounded-full bg-accent/10 border border-accent/20 mb-2 sm:mb-2">
+            <Target className="h-3 w-3 sm:h-4 sm:w-4 text-accent-foreground" />
+            <span className="text-xs sm:text-sm font-semibold text-accent-foreground uppercase tracking-wide">
+              Live Polls Data
+            </span>
+          </div>
+          <div className="flex items-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black text-balance leading-tight tracking-tight pr-3">
+              Decoding
+              <span className="bg-gradient-to-r from-accent to-foreground bg-clip-text text-transparent">
+                Africa&apos;s Pulse
+              </span>
+            </h1>
           </div>
 
-          {/* Right Side - Enhanced Infographics */}
-          <div className="space-y-6 sm:space-y-8">
-            {/* Enhanced Active Polls Bar Chart */}
+          <p className="text-lg sm:text-xl lg:text-2xl text-muted-foreground font-medium text-pretty leading-relaxed">
+            Data-Driven Insights for Political &amp; Socio-Economic Strategy
+          </p>
+
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed  border-l-4 border-accent pl-4 sm:pl-6 py-1 sm:py-2">
+            Politrack Africa provides real-time election data, live polling
+            results, and comprehensive analytics from active elections across
+            the continent.
+          </p>
+        </div>
+        {/* Right Side - Enhanced Infographics */}
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          {/* Enhanced Active Polls Bar Chart */}
+          <div className="w-full  space-y-4 sm:space-y-6">
             <Card className="p-4 sm:p-6 lg:p-8 border border-border/50 shadow-xl sm:shadow-2xl hover:shadow-2xl transition-all duration-300 bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
                 <div className="space-y-1 sm:space-y-2">
@@ -473,7 +365,79 @@ export default function HeroSection() {
                 )}
               </div>
             </Card>
+              {/* Enhanced Stats Section */}
+          {isLoading ? (
+            <StatsSkeleton />
+          ) : error ? (
+            <div className="text-center py-8 text-destructive">
+              <p>Failed to load data. Please try again.</p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => mutate()}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-6 sm:pt-8">
+              {[
+                {
+                  icon: Globe,
+                  value: totalActivePolls,
+                  label: "Active Polls",
+                  description: "Live elections",
+                },
+                {
+                  icon: Users,
+                  value: totalVotes.toLocaleString(),
+                  label: "Total Votes",
+                  description: "Cast so far",
+                },
+                {
+                  icon: Vote,
+                  value: validVotes.toLocaleString(),
+                  label: "Valid Votes",
+                  description: "Counted",
+                },
+                {
+                  icon: Clock,
+                  value: getNearestCountdown(),
+                  label: "Next Close",
+                  description: "Nearest poll",
+                },
+              ].map((stat, index) => (
+                <div key={index} className="text-center group">
+                  <div className="flex justify-center mb-2 sm:mb-4">
+                    <div className="p-2 sm:p-3 bg-accent/10 rounded-xl sm:rounded-2xl group-hover:bg-accent/20 transition-colors duration-300">
+                      <stat.icon className="h-4 w-4 sm:h-6 sm:w-6 text-accent-foreground" />
+                    </div>
+                  </div>
+                  <div className="text-xl sm:text-2xl font-black text-foreground mb-1">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    {stat.label}
+                  </div>
+                  <div className="text-xs text-muted-foreground/70">
+                    {stat.description}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
+          {/* Last Updated - Fixed hydration issue */}
+          <div className="text-xs font-semibold text-green-600 flex items-center justify-center sm:justify-start">
+            <Clock className="h-3 w-3 mr-1" />
+            Last updated:{" "}
+            {isClient && lastUpdated
+              ? lastUpdated.toLocaleTimeString()
+              : "Loading..."}
+            {isLoading && <Loader2 className="h-3 w-3 ml-2 animate-spin" />}
+          </div>
+          </div>
+          <div className="w-full space-y-4 sm:space-y-6">
             {/* Enhanced Regional Coverage Pie Chart */}
             <Card className="p-4 sm:p-6 lg:p-8 border border-border/50 shadow-xl sm:shadow-2xl hover:shadow-2xl transition-all duration-300 bg-card/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
@@ -596,6 +560,40 @@ export default function HeroSection() {
               </div>
             </Card>
           </div>
+        </div>
+
+        <div className="flex flex-col gap-4 sm:gap-6">
+          {/* Enhanced CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <Button
+              size="lg"
+              className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => mutate()}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  Refresh Data
+                  <RefreshCw className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={() => (window.location.href = "/polls")}
+              variant="outline"
+              size="lg"
+              className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 border-2 border-primary/20 text-foreground hover:bg-primary hover:text-primary-foreground font-semibold bg-background/80 backdrop-blur-sm transition-all duration-300"
+            >
+              View All Polls
+            </Button>
+          </div>
+
+        
         </div>
       </div>
     </section>

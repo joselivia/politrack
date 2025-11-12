@@ -38,7 +38,7 @@ const VoteInterface = ({ id }: { id: number }) => {
 const searchParams = useSearchParams();
 const prefilledRegion = searchParams.get("region") || "";
 const prefilledCounty = searchParams.get("county") || "";
-
+const [hasVoted, setHasVoted] = useState(false);
   // 🧍‍♂️ Voter detail states
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
@@ -70,9 +70,8 @@ const [isRegistered, setIsRegistered] = useState(false);
 
   // --- Fetch Data ---
   useEffect(() => {
-    if (!voterId) return;
-
-    const fetchData = async () => {
+    if (!id || !voterId) return;
+   const fetchData = async () => {
       try {
         const res = await axios.get(`${baseURL}/api/aspirant/${id}`);
         const fetchedData = res.data as PollData;
@@ -97,30 +96,23 @@ const [isRegistered, setIsRegistered] = useState(false);
         console.error("Error fetching competitor question:", err);
       }
     };
-    const checkIfVoted = async () => {
-      try {
-        const res = await axios.get(`${baseURL}/api/votes/status`, {
-          params: { pollId: id, voter_id: voterId },
-        });
 
-        if (res.data.alreadyVoted && !data?.allow_multiple_votes) {
-          setMessage("You have already voted in this poll.");
-        }
-      } catch (err) {
-        console.error("Error checking vote status:", err);
-      }
-    };
-    fetchData();
-    fetchCompetitorQuestion();
-  if (!data?.allow_multiple_votes) {
-      checkIfVoted();
+  const checkIfVoted = async () => {
+    try {
+      const res = await axios.get(`${baseURL}/api/votes/status`, {
+        params: { pollId: id, voter_id: voterId },
+      });
+      const already = res.data.alreadyVoted;
+      setHasVoted(already && !data?.allow_multiple_votes);
+      if (already && !data?.allow_multiple_votes) setMessage("You have already voted in this poll.");
+      else setMessage(null);
+    } catch (err) {
+      console.error("Error checking vote status:", err);
     }
-    const interval = setInterval(() => {
-      fetchData();
-      fetchCompetitorQuestion();
-    }, 5000);
-
-    return () => clearInterval(interval);
+  };
+    fetchData();
+     checkIfVoted();
+    fetchCompetitorQuestion();
   }, [id, voterId, data?.allow_multiple_votes, localAllowMultipleVotes]);
 
   // --- Countdown Timer ---
@@ -227,9 +219,7 @@ if (isVotingClosed) {
       </p>
     </div>
   );
-}   const hasVoted =
-    !data.allow_multiple_votes &&
-    message === "You have already voted in this poll.";
+}  
   return (
     <div className="max-w-2xl mx-auto p-4 min-h-screen">
       <div className="text-center">

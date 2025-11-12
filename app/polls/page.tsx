@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { baseURL } from "@/config/baseUrl";
 import Link from "next/link";
 import {
@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import FilterPollsPage from "../Admin/components/Filter";
 import { PollData } from "@/config/poll";
+import {  useRouter } from "next/navigation";
+
 
 const LivePolls = () => {
   const [polls, setPolls] = useState<PollData[]>([]);
@@ -26,6 +28,8 @@ const LivePolls = () => {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 const [filteredPolls, setFilteredPolls] = useState<PollData[]>([]);
+const route=useRouter();
+
   const fetchAllPolls = async () => {
     try {
       setLoading(true);
@@ -374,11 +378,28 @@ const [filteredPolls, setFilteredPolls] = useState<PollData[]>([]);
                       </div>
 
                       {/* Action Button */}
-                      <div className="flex justify-center items-center gap-5">                           <Link
+                      <div className="flex justify-center items-center gap-5">  
+{poll.category === "Presidential" && isPollActive(poll.voting_expires_at) && (
+  <button
+    onClick={() => {
+      const queryParams = new URLSearchParams({
+        region: poll.region || "",
+        county: poll.county || "",
+      }).toString();
+      route.push(`/presidentialVote/${poll.id}?${queryParams}`);
+    }}
+    className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+  >
+    <Vote className="w-5 h-5" />
+    <span>Vote</span>
+  </button>
+)}
+
+                                      <Link
                         href={`/polls/${poll.id}`}
-                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg"
+                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-2 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg"
                       >
-                        View Detailed Results
+                        View Poll Results
                       </Link>
                   <button
   onClick={() => {

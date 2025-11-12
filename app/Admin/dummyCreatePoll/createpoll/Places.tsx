@@ -7,10 +7,11 @@ export const Presidential_category=[
 
 export const CATEGORY_OPTIONS = [
   "Presidential",
-  "Governorship",
+  "Gubernatorial",
   "Senatorial",
-  "Parliamentary",
-  "Women Representative",
+  "MP",
+  "Women Rep",
+  "MCA",
 ];
 
 export const regionCountyMap: Record<string, string[]> = {
@@ -194,7 +195,7 @@ Dagoretti_South: ['Mutu-ini', 'Ngando', 'Riruta', 'Uthiru/Ruthimitu', 'Waithaka'
   // Murang’a County (7 constituencies, 35 wards)
   Kangema: ['Kanyenya-Ini', 'Muguru', 'Rwathia'],
   Mathioya: ['Gitugi', 'Kiru', 'Kamacharia'],
-  Kiharu: ['Wangu', 'Mugoiri', 'Mbari Ya Ngai', 'Township', 'Muruka', 'Kagundu-Ini'],
+  Kiharu: ['Wangu', 'Mugoiri', 'Mbiri', 'Township', 'Gaturi', 'Murarandia'],
   Kigumo: ['Kahumbu', 'Kinyona', 'Kigumo', 'Kangari'],
   Maragua: ['Kimorori/Wempa', 'Makuyu', 'Ng’araria', 'Ichagaki', 'Nginda'],
   Kandara: ['Ngararia', 'Muruka', 'Kagundu-Ini', 'Gaichanjiru', 'Ithiru', 'Ruchu'],

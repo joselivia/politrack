@@ -28,9 +28,11 @@ import {
   YAxis,
   Line,
   LineChart,
+  CartesianGrid,
 } from "recharts";
 import { useParams } from "next/navigation";
 import CommentSection from "@/components/CommentSection";
+import { is } from "date-fns/locale";
 
 
 export interface Candidate {
@@ -123,29 +125,35 @@ useEffect(() => {
 
   // --- SSE for live updates ---
   const evtSource = new EventSource(`${baseURL}/api/live-votes/live-stream/${pollId}?interval=${timeInterval}`);
-
+// In makePoint, ensure ALL candidates are present (even with 0)
+const makePoint = (updates: any[]) => {
+  const point: any = {};
+  data?.results.forEach(candidate => {
+    point[candidate.name] = 0; // default
+  });
+  updates.forEach((u: any) => {
+    const candidate = data?.results.find(c => c.id === u.competitor_id);
+    if (candidate) {
+      point[candidate.name] = Number(u.cumulative_votes);
+    }
+  });
+  return point;
+};
   evtSource.onmessage = (event) => {
-    const newVotes = JSON.parse(event.data);
-    if (!Array.isArray(newVotes)) return;
-    const timestamp = new Date().toLocaleTimeString("en-KE", {
+    const payload = JSON.parse(event.data);
+  if (!payload.updates?.length) return;
+
+    const timestamp = new Date(payload.timestamp).toLocaleTimeString("en-KE", {
       hour: "2-digit",
       minute: "2-digit",
     });
 
-    const newEntry: any = { time: timestamp };
-
-    data?.results.forEach((candidate) => {
-      const found = newVotes.find((v: any) => v.competitor_id === candidate.id);
-      newEntry[candidate.name] = Number(found?.cumulative_votes ?? 0);
-    });
-
     setVoteHistory((prev) => {
-      const exists = prev.some((p) => p.time === newEntry.time);
-      if (exists) {
-        return prev.map((p) => (p.time === newEntry.time ? newEntry : p));
-      } else {
-        return [...prev, newEntry].slice(-1000);
+      if (prev.some(p => p.time === timestamp)){
+        return prev.map((p) => (p.time === timestamp ?{ ...p, ...makePoint(payload.updates) } : p));
       }
+      const newPoint = { time: timestamp, ...makePoint(payload.updates) };
+      return [...prev, newPoint].slice(-100);
     });
   };
 
@@ -178,7 +186,7 @@ useEffect(() => {
 
     return () => clearInterval(interval);
   }, [data?.voting_expires_at]);
-
+const isAnimationActive=true;
   // Show loading state when no poll ID is available yet
   if (!pollId) {
     return (
@@ -417,7 +425,7 @@ useEffect(() => {
         <div className="text-center bg-blue-50 rounded-lg p-3 border border-blue-100">
           <Users className="w-5 h-5 text-blue-600 mx-auto mb-1" />
           <div className="font-bold text-blue-700 text-lg">
-          N=({data.totalVotes.toLocaleString()})
+          n=({data.totalVotes.toLocaleString()})
           </div>
           <div className="text-gray-600 text-sm">Sample Size</div>
         </div>
@@ -477,27 +485,43 @@ useEffect(() => {
     Live Vote Tracker
   </h2>
    <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-  <ResponsiveContainer width="100%"   height={Math.max(chartData.length * 40, 300)}>
-    <LineChart data={voteHistory}>
-      <XAxis dataKey="time" />
-      <YAxis allowDecimals={false}/>
-      <Tooltip />
-       <Legend />
-      {data?.results.map((c, index) => (
-        <Line
-          key={c.id}
-          type="monotone"
-          dataKey={c.name}
-          stroke={COLORS[index % COLORS.length]}
-          strokeWidth={2.5}
-          dot={false}
-          isAnimationActive={true}
-          animationDuration={700}
-        animationEasing="ease-in-out"
-        />
-      ))}
-    </LineChart>
-  </ResponsiveContainer></div>
+<ResponsiveContainer width="100%" height={350}>
+  
+  <LineChart
+    data={voteHistory}
+    margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
+  >   <CartesianGrid strokeDasharray="3 3"  stroke="#e5e7eb"/>
+   <XAxis
+  dataKey="time"
+  tick={{ fontSize: 11 }}
+    textAnchor="end"
+  height={60}
+/>
+    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+    <Tooltip   />
+  <Legend
+    height={36}
+    iconType="line"
+  />
+
+    {data?.results.map((c, index) => (
+      <Line
+        key={c.id}
+        dataKey={c.name}
+        type="monotone"
+        stroke={COLORS[index % COLORS.length]}
+        strokeWidth={2}
+        dot={false}
+        isAnimationActive={false}
+        animationDuration={0}
+      
+  
+      />
+    ))}
+  </LineChart>
+</ResponsiveContainer>
+
+</div>
 </div>
 
             {/* Bar Chart */}
