@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, use } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { baseURL } from '@/config/baseUrl';
 import { Loader2, Frown, BarChart, PieChart as PieChartIcon, MessageSquareText, Users, Scale, ArrowLeft } from 'lucide-react';
 import {
@@ -80,6 +80,8 @@ const PollVotingResultsPage = () => {
   const [results, setResults] = useState<PollResultsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+
 const route=useRouter();
   useEffect(() => {
     if (!pollId) {
@@ -90,7 +92,7 @@ const route=useRouter();
 
     const fetchPollResults = async () => {
       try {
-           const response = await fetch(`${baseURL}/api/polls/${pollId}/results`);
+           const response = await fetch(`${baseURL}/api/Opinions/${pollId}/results`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to fetch poll results.");

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
 import {
   Send,
@@ -12,6 +12,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { countyConstituencyMap, countyAssemblyWardMap } from "../../dummyCreatePoll/createpoll/Places";
 
 interface Competitor {
   id: number;
@@ -67,7 +68,18 @@ const SurveyResponsePage = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const searchParams = useSearchParams();
+    const prefilledRegion = searchParams.get("region") || "";
+  const prefilledCounty = searchParams.get("county") || "";
+    const [region, setRegion] = useState(prefilledRegion);
+    const [county, setCounty] = useState(prefilledCounty);
+      const [constituency, setConstituency] = useState("");
+      const [ward, setWard] = useState("");
+      const constituencies = county ? countyConstituencyMap[county] : [];
+      const wards = constituency ? countyAssemblyWardMap[constituency] : [];
+    const [isRegistered, setIsRegistered] = useState(false);
   const [selections, setSelections] = useState<{
     [key: number]: number |number[] | string | null;
   }>({});
@@ -245,7 +257,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
     }
 
     try {
-      const response = await fetch(`${baseURL}/api/polls/${pollId}/vote`, {
+      const response = await fetch(`${baseURL}/api/Opinions/${pollId}/vote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -257,6 +269,10 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
           respondentName: respondentName.trim(),
           respondentAge: parseInt(respondentAge),
           respondentGender,
+            region,
+    county,
+    constituency,
+    ward,
         }),
       });
 
@@ -358,17 +374,6 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
               | County: <span className="font-semibold">{pollData.county}</span>
             </span>
           )}
-          {pollData.constituency && (
-            <span className="ml-2">
-              | Constituency:{" "}
-              <span className="font-semibold">{pollData.constituency}</span>
-            </span>
-          )}
-          {pollData.ward && (
-            <span className="ml-2">
-              | Ward: <span className="font-semibold">{pollData.ward}</span>
-            </span>
-          )}
         </p>
 
         {error && (
@@ -389,6 +394,40 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
         )}
 
         <form onSubmit={handleSubmitVote} className="space-y-10">
+            {region !== "National" && (
+    <div className="flex gap-4">
+      <select
+        value={constituency}
+        onChange={(e) => {
+          setConstituency(e.target.value);
+          setWard("");
+        }}
+        disabled={!county}
+        className="w-full p-3 border border-gray-300 rounded-lg"
+      >
+        <option value="">Select Constituency</option>
+        {constituencies.map((cst) => (
+          <option key={cst} value={cst}>
+            {cst}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={ward}
+        onChange={(e) => setWard(e.target.value)}
+        disabled={!constituency}
+        className="w-full p-3 border border-gray-300 rounded-lg"
+      >
+        <option value="">Select Ward</option>
+        {wards.map((w) => (
+          <option key={w} value={w}>
+            {w}
+          </option>
+        ))}
+      </select>
+    </div>
+  )}
           <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">
             Respondent Details
           </h3>

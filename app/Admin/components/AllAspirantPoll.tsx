@@ -223,8 +223,7 @@ const AllAspirantPollPage = () => {
                       {poll.published ? "Published" : " "}
                     </span>
                     </div>
-               
-                  </div>
+                                 </div>
 
                   {/* Poll Info */}
                   <p className="text-sm text-gray-600 mb-3">

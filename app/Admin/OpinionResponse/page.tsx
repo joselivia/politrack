@@ -219,14 +219,13 @@ const AllPollsPage = () => {
                     View Responses
                   </Link>
 
-                  {mounted && isAdmin && (
                     <Link
-                      href={`/Admin/PollVoting/${poll.id}`}
+                      href={{ pathname: `/Admin/PollVoting/${poll.id}`, query: { region: poll.region, county: poll.county } }}
                       className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
                     >
                       View Poll & Vote
                     </Link>
-                  )}
+  
                 </div>
               </div>
             ))}
