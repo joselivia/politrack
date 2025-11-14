@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useState, useEffect, use } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { baseURL } from '@/config/baseUrl';
-import { Loader2, Frown, BarChart, PieChart as PieChartIcon, MessageSquareText, Users, Scale } from 'lucide-react';
+import { Loader2, Frown, BarChart, PieChart as PieChartIcon, MessageSquareText, Users, Scale, ArrowLeft } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer,
   BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend
@@ -22,7 +22,7 @@ interface Option {
 
 interface Question {
   id: number;
-  type: 'single-choice' | 'open-ended' | 'yes-no-notsure';
+  type: 'single-choice'| 'multi-choice' | 'open-ended' | 'yes-no-notsure';
   questionText: string;
   options?: Option[];
   isCompetitorQuestion?: boolean;
@@ -45,7 +45,7 @@ interface PollData {
 interface AggregatedResponse {
   questionId: number;
   questionText: string;
-  type: 'single-choice' | 'open-ended' | 'yes-no-notsure';
+  type: 'single-choice'| 'multi-choice' | 'open-ended' | 'yes-no-notsure';
   isCompetitorQuestion?: boolean;
   totalResponses: number;
   choices?: {
@@ -55,6 +55,7 @@ interface AggregatedResponse {
     percentage: number;
   }[];
   openEndedResponses?: string[];
+   totalSelections?: number; 
 }
 
 interface DemographicsData {
@@ -68,6 +69,7 @@ interface PollResultsData {
   poll: PollData;
   aggregatedResponses: AggregatedResponse[];
   demographics: DemographicsData;
+
 }
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6B6B'];
@@ -78,7 +80,7 @@ const PollVotingResultsPage = () => {
   const [results, setResults] = useState<PollResultsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+const route=useRouter();
   useEffect(() => {
     if (!pollId) {
       setError("No poll ID provided.");
@@ -147,7 +149,18 @@ const PollVotingResultsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-3 lg:p-3">
+      <button
+        onClick={() => route.back()}
+        className="inline-flex items-center gap-2 px-2 py-2 
+                   rounded-xl bg-blue-400 border border-gray-200 
+                   font-medium shadow-sm 
+                   hover:bg-blue-500 mb-4
+                   transition-all duration-300"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-6 flex items-center">
           <BarChart className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Poll Results: {poll.title}
@@ -162,12 +175,10 @@ const PollVotingResultsPage = () => {
           {poll.constituency && <span className="ml-2">| Constituency: <span className="font-semibold">{poll.constituency}</span></span>}
           {poll.ward && <span className="ml-2">| Ward: <span className="font-semibold">{poll.ward}</span></span>}
         </p>
-
         {demographics.totalRespondents > 0 ? (
           <div className="mb-10 p-6 bg-gray-50 rounded-xl shadow-md border border-gray-200">
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Users className="w-6 h-6 mr-3 text-gray-600" /> Respondent Demographics ({demographics.totalRespondents} Total)
-            </h3>
+              <Users className="w-6 h-6 mr-3 text-gray-600" /> Respondent Demographics </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Gender Distribution */}
               <div>
@@ -225,10 +236,8 @@ const PollVotingResultsPage = () => {
             {aggregatedResponses.map((questionResult) => (
               <div key={questionResult.questionId} className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
                 <h4 className="text-xl font-semibold text-gray-800 mb-4">{questionResult.questionText}</h4>
-                <p className="text-gray-600 mb-4">Total Responses: {questionResult.totalResponses}</p>
-
                 {/* Render different charts based on question type */}
-                {questionResult.type === 'single-choice' || questionResult.isCompetitorQuestion || questionResult.type === 'yes-no-notsure' ? (
+                {questionResult.type === 'single-choice' || questionResult.type === 'multi-choice' || questionResult.isCompetitorQuestion || questionResult.type === 'yes-no-notsure' ? (
                   questionResult.choices && questionResult.choices.length > 0 ? (
 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
   {/* Pie Chart */}

@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import AllPollsPage from "../components/AllPollsPage";
 import AllApirantPollPage from "../components/AllAspirantPoll";
 import { PlusCircle } from "lucide-react";
 
@@ -54,10 +53,6 @@ export default function HomePage() {
 
       <div className="mt-6">
     <AllApirantPollPage /> 
-      </div>
-
-      <div className="mt-6">
-           <AllPollsPage />
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   Users,
   HelpCircle,
   Megaphone,
+  ArrowLeft,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -26,7 +27,7 @@ interface Option {
 
 interface Question {
   id: number;
-  type: "single-choice" | "open-ended" | "yes-no-notsure";
+  type: "single-choice"|"multi-choice" | "open-ended" | "yes-no-notsure";
   questionText: string;
   options?: Option[];
   isCompetitorQuestion?: boolean;
@@ -53,7 +54,7 @@ interface VoteResponse {
   openEndedResponse?: string | null;
 }
 
-const PollVotingPage = () => {
+const SurveyResponsePage = () => {
   const params = useParams();
   const pollId = params.pollId as string;
   const router = useRouter();
@@ -65,15 +66,20 @@ const PollVotingPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [mounted, setMounted] = useState(false);
   const [selections, setSelections] = useState<{
-    [key: number]: number | string | null;
+    [key: number]: number |number[] | string | null;
   }>({});
   const [mainCompetitorSelection, setMainCompetitorSelection] = useState<
     number | null
   >(null);
   const ageOptions: number[] = Array.from({ length: 83 }, (_, i) => i + 18);
-
+  useEffect(() => {
+    const adminStatus = localStorage.getItem("isAdmin");
+    setIsAdmin(adminStatus === "true");
+    setMounted(true);
+  }, []);
   useEffect(() => {
     if (!pollId) {
       setError("No poll ID provided.");
@@ -115,6 +121,18 @@ const PollVotingPage = () => {
       [questionId]: value,
     }));
   };
+const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) => {
+  setSelections((prev) => {
+    const current = Array.isArray(prev[questionId]) ? (prev[questionId] as number[]) : [];
+    const updated = current.includes(optionId)
+      ? current.filter((id) => id !== optionId) 
+      : [...current, optionId]; 
+    return {
+      ...prev,
+      [questionId]: updated,
+    };
+  });
+};
 
   const handleSubmitVote = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,7 +209,25 @@ const PollVotingPage = () => {
           selectedCompetitorId: null,
           openEndedResponse: null,
         });
-      } else if (q.type === "open-ended") {
+      }
+      else if (q.type === "multi-choice") {
+  const selectedArray = selections[q.id];
+  if (!Array.isArray(selectedArray) || selectedArray.length === 0) {
+    setError(`Please select at least one option for question: "${q.questionText}"`);
+    setSubmitting(false);
+    return;
+  }
+  for (const optionId of selectedArray) {
+    responses.push({
+      questionId: q.id,
+      selectedOptionId: optionId,
+      selectedCompetitorId: null,
+      openEndedResponse: null,
+    });
+  }
+}
+      
+      else if (q.type === "open-ended") {
         if (typeof selection !== "string" || selection.trim() === "") {
           setError(
             `Please provide an answer for question: "${q.questionText}"`
@@ -231,7 +267,8 @@ const PollVotingPage = () => {
         setRespondentAge("");
         setSelections({});
         setMainCompetitorSelection(null);
-        setTimeout(() => router.replace('/Thankyou'), 1000); 
+        if(!isAdmin){
+        setTimeout(() => router.replace('/Thankyou'), 1000); }
       } else {
         const errorData = await response.json();
         setError(
@@ -290,7 +327,19 @@ const PollVotingPage = () => {
   );
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+<button
+  onClick={() => router.back()}
+  className="inline-flex items-center gap-2 px-2 py-2 
+             rounded-xl bg-blue-400 border border-gray-200 
+             font-medium shadow-sm 
+             hover:bg-blue-500 mb-4
+             transition-all duration-300"
+>
+  <ArrowLeft className="w-4 h-4" />
+  Back
+</button>
+
+      <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-3 sm:p-6 border border-gray-200">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-6 flex items-center">
           <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />{" "}
           Vote in Poll: {pollData.title}
@@ -485,6 +534,26 @@ const PollVotingPage = () => {
                   <p className="text-lg font-semibold text-gray-800 mb-4">
                     {q.questionText}{" "}
                   </p>
+{q.type === "multi-choice" && q.options && (
+  <div className="space-y-3">
+    {q.options.map((option) => {
+      const selectedOptions = Array.isArray(selections[q.id]) ? (selections[q.id] as number[]) : [];
+      return (
+        <label key={option.id} className="flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            name={`question-${q.id}`}
+            value={option.id}
+            checked={selectedOptions.includes(option.id)}
+            onChange={() => handleMultiChoiceSelectionChange(q.id, option.id)}
+            className="form-checkbox h-5 w-5 text-green-600"
+          />
+          <span className="ml-3 text-base text-gray-700">{option.optionText}</span>
+        </label>
+      );
+    })}
+  </div>
+)}
 
                   {q.type === "single-choice" && q.options && (
                     <div className="space-y-3">
@@ -591,4 +660,4 @@ const PollVotingPage = () => {
   );
 };
 
-export default PollVotingPage;
+export default SurveyResponsePage;

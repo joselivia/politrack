@@ -44,11 +44,18 @@ interface YesNoNotSureQuestion {
   questionText: string;
   fixedOptions: string[];
 }
+interface MultiChoiceQuestion {
+  id: string;
+  type: "multi-choice";
+  questionText: string;
+  options: GenericOption[];
+}
 
 type PollQuestion =
   | SingleChoiceQuestion
   | OpenEndedQuestion
-  | YesNoNotSureQuestion;
+  | YesNoNotSureQuestion
+  | MultiChoiceQuestion;
 
 type State = {
   pollId: string | null;
@@ -145,7 +152,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         dynamicQuestions: state.dynamicQuestions.map((q) => {
-          if (q.id === action.payload && q.type === "single-choice" && !q.isCompetitorQuestion) {
+          if ((q.id === action.payload && q.type === "single-choice" && !q.isCompetitorQuestion) || (q.id === action.payload && q.type === "multi-choice")) {
             return {
               ...q,
               options: [...q.options, { text: "" }],
@@ -159,7 +166,8 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         dynamicQuestions: state.dynamicQuestions.map((q) => {
-          if (q.id === action.payload.questionId && q.type === "single-choice" && !q.isCompetitorQuestion) {
+          if ((q.id === action.payload.questionId && q.type === "single-choice" && !q.isCompetitorQuestion) ||
+        (q.id === action.payload.questionId && q.type === "multi-choice")) {
             if (q.options.length <= 1) {
               return q;
             }
@@ -178,7 +186,8 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         dynamicQuestions: state.dynamicQuestions.map((q) => {
-          if (q.id === action.payload.questionId && q.type === "single-choice" && !q.isCompetitorQuestion) {
+          if ((q.id === action.payload.questionId && q.type === "single-choice" && !q.isCompetitorQuestion) ||
+        (q.id === action.payload.questionId && q.type === "multi-choice")) {
             const updatedOptions = [...q.options];
             updatedOptions[action.payload.optionIndex] = {
               text: action.payload.newText,
@@ -236,7 +245,7 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
   const generateUniqueId = () => Math.random().toString(36).substring(2, 9);
 
   const handleAddQuestion = (
-    type: "single-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice"
+    type: "single-choice"|"multi-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice"
   ) => {
     let newQuestion: PollQuestion;
     const id = generateUniqueId();
@@ -248,7 +257,16 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
         questionText: "",
         options: [{ text: "" }],
       };
-    } else if (type === "open-ended") {
+    }  else if (type === "multi-choice") {
+    newQuestion = {
+      id,
+      type: "multi-choice",
+      questionText: "",
+      options: [{ text: "" }],
+    };
+  }    
+    
+    else if (type === "open-ended") {
       newQuestion = { id, type: "open-ended", questionText: "" };
     } else if (type === "yes-no-notsure") {
       newQuestion = {
@@ -319,13 +337,15 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
     });
 
     const dynamicQuestionsForBackend = state.dynamicQuestions.map((q) => {
-      if (q.type === "single-choice") {
+      if (q.type === "single-choice" || q.type === "multi-choice") {
         return {
           id: q.id,
           type: q.type,
           questionText: q.questionText,
           options: q.options.map((opt) => opt.text),
-          isCompetitorQuestion: (q as SingleChoiceQuestion).isCompetitorQuestion || false,
+          isCompetitorQuestion:q.type==="single-choice" && (q as SingleChoiceQuestion).isCompetitorQuestion
+          ?true
+          :false,
         };
       } else if (q.type === "yes-no-notsure") {
         return {
@@ -584,6 +604,52 @@ const DynamicQuestionSection: React.FC<{
           </button>
         </div>
       ))}
+
+{question.type === "multi-choice" && (
+  <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
+    {(question as MultiChoiceQuestion).options.map((option, oIndex) => (
+      <div key={oIndex} className="relative p-4 border rounded-lg bg-gray-50 shadow-sm">
+        {(question as MultiChoiceQuestion).options.length > 1 && (
+          <button
+            type="button"
+            onClick={() =>
+              dispatch({
+                type: "REMOVE_OPTION",
+                payload: { questionId: question.id, optionIndex: oIndex },
+              })
+            }
+            className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1 rounded-full bg-white shadow-sm"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+        <h6 className="text-sm font-medium text-gray-600 mb-2">Option {oIndex + 1}</h6>
+        <input
+          type="text"
+          value={option.text}
+          onChange={(e) =>
+            dispatch({
+              type: "UPDATE_OPTION",
+              payload: { questionId: question.id, optionIndex: oIndex, newText: e.target.value },
+            })
+          }
+          placeholder="Enter option text"
+          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
+          required
+        />
+      </div>
+    ))}
+    <button
+      type="button"
+      onClick={() => dispatch({ type: "ADD_OPTION", payload: question.id })}
+      className="flex items-center px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded-md hover:bg-green-600 transition"
+    >
+      <Plus className="w-4 h-4 mr-2" /> Add Option
+    </button>
+  </div>
+)}
+
+
     {question.type === "yes-no-notsure" && (
       <div className="space-y-3 border-t pt-4 mt-4 border-gray-100">
         <div className="flex flex-wrap gap-3">
@@ -599,12 +665,22 @@ const DynamicQuestionSection: React.FC<{
 );
 
 const FixedQuestionBar: React.FC<{
-  handleAddQuestion: (type: "single-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice") => void;
+  handleAddQuestion: (type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice") => void;
   submitting: boolean;
 }> = ({ handleAddQuestion, submitting }) => (
   <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
     <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
       <div className="flex flex-wrap justify-center sm:justify-start gap-3 w-full sm:w-auto">
+        
+        <button
+  type="button"
+  onClick={() => handleAddQuestion("multi-choice")}
+  className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition transform hover:scale-105 text-sm"
+>
+  <Radio className="w-4 h-4 mr-2" /> Multi Choice
+</button>
+
+        
         <button
           type="button"
           onClick={() => handleAddQuestion("single-choice")}

@@ -304,12 +304,12 @@ Dagoretti_South: ['Mutu-ini', 'Ngando', 'Riruta', 'Uthiru/Ruthimitu', 'Waithaka'
   Cherangany: ['Sinyerere', 'Makutano', 'Kaplamai', 'Motosiet', 'Cherangany/Suwerwa', 'Sitatunga'],
 
   // Uasin Gishu County (6 constituencies, 30 wards)
-  Soy: ['Mois_Bridge', 'Kapkures', 'Ziwa', 'Segero/Barsombe', 'Kipsomba', 'Soy'],
-  Turbo: ['Ngenyilel', 'Tapsagoi', 'Kamagut', 'Kiplombe', 'Kaptagat', 'Tembelio'],
+  Soy: ['Mois_Bridge', 'Kapkures', 'Ziwa', 'Segero/Barsombe', 'Kipsomba', 'Soy','Kuinet/Kapsuswa'],
+  Turbo: ['Ngenyilel', 'Tapsagoi', 'Kamagut', 'Kiplombe', 'Kapsaos','Huruma'],
   Moiben: ['Tembelio', 'Sergoit', 'Karuna/Meibeki', 'Moiben', 'Kimumu'],
-  Ainabkoi: ['Kapsoya', 'Kaptagat', 'Ainabkoi/Olare'],
-  Kapseret: ['Simat/Kapseret', 'Ngeria', 'Langas', 'Kipkenyo', 'Racecourse'],
-  Kesses: ['Tulwet/Chuiyat', 'Cheptiret/Kipchamo', 'Tarakwa', 'Chepkoilel'],
+  Ainabkoi: ['Kapsoya', 'Kiptagat', 'Ainabkoi/Olare'],
+  Kapseret: ['Simat/Kapseret', 'Ngeria', 'Langas', 'Kipkenyo','Megun'],
+  Kesses: ['Tulwet/Chuiyat','RaceCourse', 'Cheptiret/Kipchamo', 'Tarakwa'],
 
   // Elgeyo Marakwet County (4 constituencies, 20 wards)
   Marakwet_East: ['Kapyego', 'Sambirir', 'Endo', 'Embobut/Embulot'],

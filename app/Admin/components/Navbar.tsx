@@ -12,6 +12,7 @@ export default function Navbar() {
 
   const navItems = [
     { label: "Home", href: "/Admin/Reports" },
+    { label: "Opinion", href: "/Admin/OpinionResponse" },
     { label: "News", href: "/Admin/BlogPostForm/BlogList" },
     { label: "Events", href: "/Admin/Event" },
   ];
