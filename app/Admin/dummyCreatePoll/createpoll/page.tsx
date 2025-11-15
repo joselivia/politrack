@@ -21,6 +21,10 @@ const CreatePoll = () => {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [expiry, setExpiry] = useState<string | null>(null);
+
+const [pollType, setPollType] = useState<"poll" | "opinion" | "">("");
+const isOpinionPoll = pollType === "opinion";
+
   const router = useRouter();
 
   const counties = region ? regionCountyMap[region] : [];
@@ -60,9 +64,9 @@ const [customCategory,setCustomCategory] = useState("");
       presidential: showPresidentialExecutive ? presidential : null,
       region,
       county: county || "All",
-      constituency: constituency || "All",
-      ward: ward || "All",
-      voting_expires_at: expiryTimestamp,
+ constituency: isOpinionPoll ? "All" : constituency || "All",
+  ward: isOpinionPoll ? "All" : ward || "All",
+  voting_expires_at: isOpinionPoll ? null : expiryTimestamp,
     };
 
     try {
@@ -133,7 +137,26 @@ const [customCategory,setCustomCategory] = useState("");
                 required
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Poll Type <span className="text-red-500">*</span>
+  </label>
+
+  <select
+    value={pollType}
+    onChange={(e) => setPollType(e.target.value as "poll" | "opinion")}
+    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500"
+    required
+  >
+    <option value="" disabled>Select poll type</option>
+    <option value="poll">Voting Poll</option>
+    <option value="opinion">Opinion Poll Responses</option>
+  </select>
+</div>
 <div>
   <label
     htmlFor="category"
@@ -290,8 +313,8 @@ const [customCategory,setCustomCategory] = useState("");
                   setConstituency(e.target.value);
                   setWard("");
                 }}
-                disabled={!county}
-                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${
+                disabled={!county || isOpinionPoll}
+                className={`${!county || isOpinionPoll ? "opacity-60 cursor-not-allowed" : ""}w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${
                   !county ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
@@ -317,8 +340,8 @@ const [customCategory,setCustomCategory] = useState("");
                 id="ward"
                 value={ward}
                 onChange={(e) => setWard(e.target.value)}
-                disabled={!constituency}
-                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${
+                disabled={!constituency || isOpinionPoll}
+                className={`${!constituency || isOpinionPoll ? "opacity-60 cursor-not-allowed" : ""}w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${
                   !constituency ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
@@ -340,11 +363,11 @@ const [customCategory,setCustomCategory] = useState("");
             <input
               type="number"
               id="expiry"
-              min="1"
+              min="1" disabled={isOpinionPoll}
               placeholder="Enter duration in hours (e.g. 2, 24, 48)"
               value={expiry || ""}
               onChange={(e) => setExpiry(e.target.value ? e.target.value : null)}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-800 bg-white"
+              className={` ${ isOpinionPoll ? "opacity-60 cursor-not-allowed" : ""}w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-800 bg-white`}
             />
           </div>
 

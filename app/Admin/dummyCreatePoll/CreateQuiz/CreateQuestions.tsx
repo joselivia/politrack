@@ -369,7 +369,7 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
       if (response.ok) {
         const result = await response.json();
         dispatch({ type: "SET_MESSAGE", payload: "✅ Poll questions and aspirants saved successfully!" });
-        setTimeout(() => router.push(`/Admin/PollVoting/${state.pollId}`), 1500);
+        setTimeout(() => router.push(`/Admin/OpinionResponse`), 1000);
       } else {
         const errorData = await response.json();
         dispatch({

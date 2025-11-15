@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, use } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { baseURL } from '@/config/baseUrl';
 import { Loader2, Frown, BarChart, PieChart as PieChartIcon, MessageSquareText, Users, Scale, ArrowLeft } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer,
   BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend
 } from 'recharts';
+
 interface Competitor {
   id: number;
   name: string;
@@ -27,16 +28,18 @@ interface Question {
   options?: Option[];
   isCompetitorQuestion?: boolean;
 }
+interface locationData{
+  region: string;
+  county: string;
+  constituency: string;
+  ward: string;
+}
 
 interface PollData {
   id: number;
   title: string;
   category: string;
   presidential: string | null;
-  region: string;
-  county: string;
-  constituency: string;
-  ward: string;
   createdAt: string;
   competitors: Competitor[];
   questions: Question[];
@@ -50,12 +53,12 @@ interface AggregatedResponse {
   totalResponses: number;
   choices?: {
     id: number | string;
-    label: string;     
+    label: string;
     count: number;
     percentage: number;
   }[];
   openEndedResponses?: string[];
-   totalSelections?: number; 
+  totalSelections?: number;
 }
 
 interface DemographicsData {
@@ -67,22 +70,22 @@ interface DemographicsData {
 
 interface PollResultsData {
   poll: PollData;
+  location: locationData[];
   aggregatedResponses: AggregatedResponse[];
   demographics: DemographicsData;
-
 }
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6B6B'];
 
 const PollVotingResultsPage = () => {
   const params = useParams();
-  const pollId = params.pollId as string;
+  const pollId = params?.pollId as string | undefined;
   const [results, setResults] = useState<PollResultsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
 
-const route=useRouter();
+  const route = useRouter();
+
   useEffect(() => {
     if (!pollId) {
       setError("No poll ID provided.");
@@ -92,7 +95,7 @@ const route=useRouter();
 
     const fetchPollResults = async () => {
       try {
-           const response = await fetch(`${baseURL}/api/Opinions/${pollId}/results`);
+        const response = await fetch(`${baseURL}/api/Opinions/${pollId}/results`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to fetch poll results.");
@@ -137,7 +140,9 @@ const route=useRouter();
     );
   }
 
-  const { poll, aggregatedResponses, demographics } = results;
+  const { poll, aggregatedResponses, demographics} = results;
+const loc = results.location?.[0];
+
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
@@ -167,16 +172,24 @@ const route=useRouter();
         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-6 flex items-center">
           <BarChart className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Poll Results: {poll.title}
         </h2>
+
         <p className="text-lg text-gray-600 mb-8">
           Category: <span className="font-semibold">{poll.category}</span>
+
           {poll.category === 'Presidential' && poll.presidential && (
             <span className="ml-2">| Presidential: <span className="font-semibold">{poll.presidential}</span></span>
           )}
-          | Region: <span className="font-semibold">{poll.region}</span>
-          {poll.county && <span className="ml-2">| County: <span className="font-semibold">{poll.county}</span></span>}
-          {poll.constituency && <span className="ml-2">| Constituency: <span className="font-semibold">{poll.constituency}</span></span>}
-          {poll.ward && <span className="ml-2">| Ward: <span className="font-semibold">{poll.ward}</span></span>}
+
+          {location && (
+            <>
+              <span className="ml-2">| Region: <span className="font-semibold">{loc.region || 'Region'}</span></span>
+              <span className="ml-2">| County: <span className="font-semibold">{loc.county}</span></span>
+              <span className="ml-2">| Constituency: <span className="font-semibold">{loc.constituency}</span></span>
+              <span className="ml-2">| Ward: <span className="font-semibold">{loc.ward}</span></span>
+            </>
+          )}
         </p>
+
         {demographics.totalRespondents > 0 ? (
           <div className="mb-10 p-6 bg-gray-50 rounded-xl shadow-md border border-gray-200">
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">

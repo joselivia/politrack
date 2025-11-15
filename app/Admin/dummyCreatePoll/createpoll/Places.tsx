@@ -4,7 +4,6 @@ export const Presidential_category=[
   "Cabinet Secretary",
   "Principal Secretary",
 ]
-
 export const CATEGORY_OPTIONS = [
   "Presidential",
   "Gubernatorial",

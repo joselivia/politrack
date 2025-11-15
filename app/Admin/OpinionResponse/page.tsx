@@ -70,7 +70,8 @@ const AllPollsPage = () => {
 
   const handleEdit = (pollId: number) => {
     setMenuOpenId(null);
-    router.push(`/Admin/dummyCreatePoll/EditAspirants/${pollId}`);
+    alert("This feature is not available yet.");
+    //router.push(`/Admin/dummyCreatePoll/EditAspirants/${pollId}`);
   };
 
   useEffect(() => {

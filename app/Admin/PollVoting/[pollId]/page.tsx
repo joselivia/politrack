@@ -50,8 +50,8 @@ interface PollData {
 
 interface VoteResponse {
   questionId: number;
-  selectedCompetitorId?: number | null;
-  selectedOptionId?: number | null;
+  selectedCompetitorIds?: number | null;
+  selectedOptionIds?: number[] | null;
   openEndedResponse?: string | null;
 }
 
@@ -176,8 +176,8 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
       }
       responses.push({
         questionId: mainCompetitorQuestion.id,
-        selectedCompetitorId: mainCompetitorSelection,
-        selectedOptionId: null,
+        selectedCompetitorIds: mainCompetitorSelection,
+        selectedOptionIds: null,
         openEndedResponse: null,
       });
     }
@@ -202,8 +202,8 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
         }
         responses.push({
           questionId: q.id,
-          selectedCompetitorId: selection,
-          selectedOptionId: null,
+          selectedCompetitorIds: selection,
+          selectedOptionIds: null,
           openEndedResponse: null,
         });
       } else if (q.type === "single-choice" || q.type === "yes-no-notsure") {
@@ -217,8 +217,8 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
         }
         responses.push({
           questionId: q.id,
-          selectedOptionId: selection,
-          selectedCompetitorId: null,
+          selectedOptionIds: Array.isArray(selection) ? [selection] : [selection],
+          selectedCompetitorIds: null,
           openEndedResponse: null,
         });
       }
@@ -229,14 +229,14 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
     setSubmitting(false);
     return;
   }
-  for (const optionId of selectedArray) {
+
     responses.push({
       questionId: q.id,
-      selectedOptionId: optionId,
-      selectedCompetitorId: null,
+      selectedOptionIds: selectedArray,
+      selectedCompetitorIds: null,
       openEndedResponse: null,
     });
-  }
+
 }
       
       else if (q.type === "open-ended") {
@@ -250,8 +250,8 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
         responses.push({
           questionId: q.id,
           openEndedResponse: selection.trim(),
-          selectedCompetitorId: null,
-          selectedOptionId: null,
+          selectedCompetitorIds: null,
+          selectedOptionIds: null,
         });
       }
     }
