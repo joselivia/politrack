@@ -49,7 +49,7 @@ const AllPollsPage = () => {
 
     setDeletingId(pollId);
     try {
-      const res = await fetch(`${baseURL}/api/polls/${pollId}`, {
+      const res = await fetch(`${baseURL}/api/Opinions/${pollId}`, {
         method: "DELETE",
       });
 
