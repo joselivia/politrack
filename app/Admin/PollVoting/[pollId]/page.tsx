@@ -79,7 +79,6 @@ const SurveyResponsePage = () => {
       const [ward, setWard] = useState("");
       const constituencies = county ? countyConstituencyMap[county] : [];
       const wards = constituency ? countyAssemblyWardMap[constituency] : [];
-    const [isRegistered, setIsRegistered] = useState(false);
   const [selections, setSelections] = useState<{
     [key: number]: number |number[] | string | null;
   }>({});
@@ -565,13 +564,13 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                 <HelpCircle className="w-7 h-7 mr-3 text-indigo-600" /> Other
                 Poll Questions
               </h3>
-              {otherQuestions.map((q) => (
+              {otherQuestions.map((q,index) => (
                 <div
                   key={q.id}
                   className="mb-8 p-5 bg-white rounded-lg shadow-sm border border-gray-200"
                 >
                   <p className="text-lg font-semibold text-gray-800 mb-4">
-                    {q.questionText}{" "}
+                   <span>{ index+1}.</span> {q.questionText}{" "}
                   </p>
 {q.type === "multi-choice" && q.options && (
   <div className="space-y-3">

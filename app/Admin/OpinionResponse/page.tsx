@@ -201,8 +201,7 @@ const AllPollsPage = () => {
                   <div className="text-sm text-gray-500 space-y-1">
                     <p className="flex items-center">
                       <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                      Ward: {poll.ward || "N/A"}, Const: {poll.constituency || "N/A"}, County:{" "}
-                      {poll.county}
+                 County: {poll.county}
                     </p>
                     <p className="flex items-center">
                       <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />

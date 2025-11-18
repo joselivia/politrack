@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
 import {
   Loader2,
@@ -26,7 +26,6 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-
 interface Competitor {
   id: number;
   name: string;
@@ -111,9 +110,26 @@ const PollVotingResultsPage = () => {
   const [results, setResults] = useState<PollResultsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const prefilledCounty = searchParams.get("county") || "";
+  const [county, setCounty] = useState(prefilledCounty);
+  const [constituency, setConstituency] = useState("");
+  const [ward, setWard] = useState("");
+const constituencies = results
+  ? [...new Set(results.location
+      .filter(loc => !county || loc.county === county)
+      .map(loc => loc.constituency)
+    )]
+  : [];
+
+const wards = results
+  ? [...new Set(results.location
+      .filter(loc => !constituency || loc.constituency === constituency)
+      .map(loc => loc.ward)
+    )]
+  : [];
 
   const route = useRouter();
-
   useEffect(() => {
     if (!pollId) {
       setError("No poll ID provided.");
@@ -122,9 +138,15 @@ const PollVotingResultsPage = () => {
     }
 
     const fetchPollResults = async () => {
+      setLoading(true);
+      const query = new URLSearchParams();
+
+      if (county) query.append("county", county);
+      if (constituency) query.append("constituency", constituency);
+      if (ward) query.append("ward", ward);
       try {
         const response = await fetch(
-          `${baseURL}/api/Opinions/${pollId}/results`
+          `${baseURL}/api/Opinions/${pollId}/results?${query.toString()}`
         );
         if (!response.ok) {
           const errorData = await response.json();
@@ -143,7 +165,7 @@ const PollVotingResultsPage = () => {
     };
 
     fetchPollResults();
-  }, [pollId]);
+  }, [pollId, county, constituency, ward]);
 
   if (loading) {
     return (
@@ -176,7 +198,7 @@ const PollVotingResultsPage = () => {
     );
   }
 
-  const { poll, aggregatedResponses=[], demographics={} as any } = results;
+  const { poll, aggregatedResponses = [], demographics = {} as any } = results;
   const loc = results.location?.[0] || null;
 
   const renderCustomizedLabel = ({
@@ -186,7 +208,7 @@ const PollVotingResultsPage = () => {
     innerRadius,
     outerRadius,
     percent,
-    index,
+index
   }: any) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
@@ -224,7 +246,7 @@ const PollVotingResultsPage = () => {
           Poll Results: {poll.title}
         </h2>
 
-        <p className="text-lg text-gray-600 mb-8">
+        <div className=" flex items-center text-lg text-gray-600 p-x-4 ">
           Category: <span className="font-semibold">{poll.category}</span>
           {poll.category === "Presidential" && poll.presidential && (
             <span className="ml-2">
@@ -241,16 +263,45 @@ const PollVotingResultsPage = () => {
               <span className="ml-2">
                 | County: <span className="font-semibold">{loc.county}</span>
               </span>
-              <span className="ml-2">
-                | Constituency:{" "}
-                <span className="font-semibold">{loc.constituency}</span>
-              </span>
-              <span className="ml-2">
-                | Ward: <span className="font-semibold">{loc.ward}</span>
-              </span>
+<div className="flex flex-col sm:flex-row gap-3 px-3">
+  {/* Constituency */}
+  <select
+    value={constituency}
+    onChange={(e) => {
+      setConstituency(e.target.value);
+      setWard(""); 
+    }}
+    className="w-full z-100 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 bg-white"
+  >
+    <option value="">Select Constituency</option>
+    {constituencies.map((cst) => (
+      <option key={cst} value={cst}>
+        {cst}
+      </option>
+    ))}
+  </select>
+
+  {/* Ward */}
+  <select
+    value={ward}
+    onChange={(e) => setWard(e.target.value)}
+    disabled={!constituency}
+    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 ${
+      !constituency ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+    }`}
+  >
+    <option value="">Select Ward</option>
+    {wards.map((w) => (
+      <option key={w} value={w}>
+        {w}
+      </option>
+    ))}
+  </select>
+</div>
+
             </>
           )}
-        </p>
+        </div>
 
         {demographics && demographics.totalRespondents > 0 ? (
           <div className="mb-10 p-6 bg-gray-50 rounded-xl shadow-md border border-gray-200">
@@ -278,10 +329,21 @@ const PollVotingResultsPage = () => {
                       labelLine={false}
                       label={renderCustomizedLabel}
                     >
-{demographics.gender.map((entry: {label: string; count: number; percentage: number}, index: number) => (
-  <Cell key={`cell-gender-${index}`} fill={COLORS[index % COLORS.length]} />
-))}
-
+                      {demographics.gender.map(
+                        (
+                          entry: {
+                            label: string;
+                            count: number;
+                            percentage: number;
+                          },
+                          index: number
+                        ) => (
+                          <Cell
+                            key={`cell-gender-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        )
+                      )}
                     </Pie>
                     <Tooltip />
                     <Legend />
@@ -314,19 +376,20 @@ const PollVotingResultsPage = () => {
           </div>
         )}
 
-        {Array.isArray(aggregatedResponses) && aggregatedResponses.length > 0 ? (
+        {Array.isArray(aggregatedResponses) &&
+        aggregatedResponses.length > 0 ? (
           <div className="space-y-10">
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
               <Scale className="w-6 h-6 mr-3 text-gray-600" /> Question-wise
               Results
             </h3>
-            {aggregatedResponses.map((questionResult) => (
+            {aggregatedResponses.map((questionResult, index) => (
               <div
                 key={questionResult.questionId}
                 className="bg-white p-6 rounded-xl shadow-md border border-gray-200"
               >
                 <h4 className="text-xl font-semibold text-gray-800 mb-4">
-                  {questionResult.questionText}
+                 <span>{ index+1}.</span> {questionResult.questionText}
                 </h4>
                 {/* Render different charts based on question type */}
                 {questionResult.type === "single-choice" ||
