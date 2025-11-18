@@ -182,7 +182,7 @@ Dagoretti_South: ['Mutu-ini', 'Ngando', 'Riruta', 'Uthiru/Ruthimitu', 'Waithaka'
   Kieni: ['Mweiga', 'Naromoru Kiamathaga', 'Mwiyogo/Endarasha', 'Mugunda', 'Gatarakwa', 'Thegu River', 'Kabaru', 'Gakawa'],
   Mathira: ['Ruguru', 'Magutu', 'Iriaini', 'Konyu', 'Kirimukuyu', 'Karatina Town'],
   Othaya: ['Mahiga', 'Iria-Ini', 'Chinga', 'Karima'],
-  Mukurweini: ['Gikondi', 'Rugi', 'Mukurwe-Ini West', 'Mukurwe-Ini East'],
+  Mukurweini: ['Gikondi', 'Rugi', 'Mukurwe-Ini West', 'Mukurwe-Ini Central'],
   Nyeri_Town: ['Khamis', 'Rware', 'Gatitu/Muruguru', 'Ruringu', 'Kamkunji/Kiganjo'],
 
   // Kirinyaga County (4 constituencies, 20 wards)
