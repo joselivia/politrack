@@ -220,7 +220,7 @@ const AllAspirantPollPage = () => {
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      {poll.published ? "Published" : " "}
+                      {poll.published ? "Published" : "Draft"}
                     </span>
                     </div>
                                  </div>
@@ -233,8 +233,7 @@ const AllAspirantPollPage = () => {
                   <div className="text-sm text-gray-500 space-y-1">
                     <p className="flex items-center">
                       <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                      Ward: {poll.ward || "All"}, Const:{" "}
-                      {poll.constituency || "All"}, County: {poll.county || "All"}
+                      Ward: {poll.ward || "All"}, Const:{poll.constituency || "All"}, County: {poll.county || "All"}
                     </p>
                     <p className="flex items-center">
                       <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />
@@ -247,7 +246,7 @@ const AllAspirantPollPage = () => {
                     <Link
                       href={{
                         pathname: `/Admin/vote/${poll.id}`,
-                        query: { region: poll.region, county: poll.county },
+                        query: { region: poll.region, county: poll.county,constituency: poll.constituency || ""},
                       }}
                       className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
                     >

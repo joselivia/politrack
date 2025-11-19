@@ -226,7 +226,7 @@ Dagoretti_South: ['Mutu-ini', 'Ngando', 'Riruta', 'Uthiru/Ruthimitu', 'Waithaka'
   Mwala: ['Mbiuni', 'Makutano/Mwala', 'Masii', 'Muthetheni', 'Wamunyu', 'Kibauni'],
 
   // Makueni County constituencies
-    Mbooni: ['Tulimani', 'Mbooni', 'Kithungo/Kitundu', 'Kiteta/Kisau', 'Waia/Kako', 'Kalawa'],
+  Mbooni: ['Tulimani', 'Mbooni', 'Kithungo/Kitundu', 'Kiteta/Kisau', 'Waia/Kako', 'Kalawa'],
   Kilome: ['Kasikeu', 'Mukaa', 'Kiima Kiu/Kalanzoni'],
   Kaiti: ['Ukia', 'Kee', 'Kilungu', 'Ilima'],
   Makueni: ['Wote', 'Muvau/Kikumini', 'Mavindini', 'Kitise/Kithuki', 'Nzaui/Kalamba', 'Mbitini'],

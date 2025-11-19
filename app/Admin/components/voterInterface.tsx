@@ -38,16 +38,20 @@ const VoteInterface = ({ id }: { id: number }) => {
 const searchParams = useSearchParams();
 const prefilledRegion = searchParams.get("region") || "";
 const prefilledCounty = searchParams.get("county") || "";
+let prefilledConstituency = searchParams.get("constituency") || "";
+if (prefilledConstituency === "All") {
+  prefilledConstituency = "";
+}
 const [hasVoted, setHasVoted] = useState(false);
   // 🧍‍♂️ Voter detail states
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
 const [region, setRegion] = useState(prefilledRegion);
 const [county, setCounty] = useState(prefilledCounty);
-  const [constituency, setConstituency] = useState("");
+const [constituency, setConstituency] = useState(prefilledConstituency);
   const [ward, setWard] = useState("");
   const constituencies = county ? countyConstituencyMap[county] : [];
-  const wards = constituency ? countyAssemblyWardMap[constituency] : [];
+   const wards = constituency ? countyAssemblyWardMap[constituency] : [];
 const [isRegistered, setIsRegistered] = useState(false);
 
   // --- Handle Mount ---
@@ -70,7 +74,7 @@ const [isRegistered, setIsRegistered] = useState(false);
 
   // --- Fetch Data ---
   useEffect(() => {
-    if (!id || !voterId) return;
+    if (!id || !voterId ) return;
    const fetchData = async () => {
       try {
         const res = await axios.get(`${baseURL}/api/aspirant/${id}`);
@@ -97,23 +101,12 @@ const [isRegistered, setIsRegistered] = useState(false);
       }
     };
 
-  const checkIfVoted = async () => {
-    try {
-      const res = await axios.get(`${baseURL}/api/votes/status`, {
-        params: { pollId: id, voter_id: voterId },
-      });
-      const already = res.data.alreadyVoted;
-      setHasVoted(already && !data?.allow_multiple_votes);
-      if (already && !data?.allow_multiple_votes) setMessage("You have already voted in this poll.");
-      else setMessage(null);
-    } catch (err) {
-      console.error("Error checking vote status:", err);
-    }
-  };
     fetchData();
-     checkIfVoted();
     fetchCompetitorQuestion();
+    checkIfVoted();
   }, [id, voterId, data?.allow_multiple_votes, localAllowMultipleVotes]);
+// --- checkIfVoted function moved outside useEffect ---
+
 
   // --- Countdown Timer ---
   useEffect(() => {
@@ -137,7 +130,20 @@ const [isRegistered, setIsRegistered] = useState(false);
 
     return () => clearInterval(interval);
   }, [data?.voting_expires_at]);
-
+    const checkIfVoted = async (pollData?: PollData) => {
+  try {
+    const res = await axios.get(`${baseURL}/api/votes/status`, {
+      params: { pollId: id, voter_id: voterId },
+    });
+    const already = res.data.alreadyVoted;
+    const allowMultiple = pollData ? pollData.allow_multiple_votes : data?.allow_multiple_votes;
+    setHasVoted(already && !allowMultiple);
+    if (already && !allowMultiple) setMessage("You have already voted in this poll.");
+    else setMessage(null);
+  } catch (err) {
+    console.error("Error checking vote status:", err);
+  }
+};
   // --- Voting Logic ---
   const handleVote = async () => {
     if (!selectedCandidateId || !data || !voterId) return;
@@ -168,12 +174,13 @@ if (region !== "National" && (!county || !constituency || !ward)) {
       });
 
       if (response.status === 200) {
-        setMessage("✅ Vote recorded successfully!");
+        setMessage("✅ Vote recorded successfully!"); 
         setSelectedCandidateId(null);
         setName("");
         setGender("");
         setConstituency("");
-        setWard("");
+        setWard(""); 
+await checkIfVoted();
         if (!isAdmin) {
           setTimeout(() => router.replace("/Thankyou"), 1000);
         }
@@ -238,7 +245,7 @@ if (isVotingClosed) {
           </button>
         )}
       </div>
-{hasVoted ? (
+{hasVoted  ? (
   <div className="bg-white mt-6 p-4 rounded-lg shadow-md flex justify-center items-center">
         <p className="text-lg font-semibold mb-4">{message}</p>
   </div>
@@ -271,10 +278,12 @@ if (isVotingClosed) {
       <select
         value={constituency}
         onChange={(e) => {
-          setConstituency(e.target.value);
-          setWard("");
-        }}
-        disabled={!county}
+         if (!prefilledConstituency) {  
+      setConstituency(e.target.value);
+      setWard("");
+    }
+  }}
+  disabled={!!prefilledConstituency}
         className="w-full p-3 border border-gray-300 rounded-lg"
       >
         <option value="">Select Constituency</option>
@@ -302,7 +311,7 @@ if (isVotingClosed) {
   )}
 </div>
   {/* ✅ Continue Button */}
-  {!isRegistered && (
+  {!isRegistered && !hasVoted && (
 <button
   onClick={() => {
     if (isRegistered) return;
