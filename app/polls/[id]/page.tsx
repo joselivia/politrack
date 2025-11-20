@@ -91,79 +91,79 @@ const LiveDetailsReport = ({ compact = false }: any) => {
   const [voteHistory, setVoteHistory] = useState<VoteHistoryPoint[]>([]);
 const [timeInterval, setTimeInterval] = useState("15m");
 
-useEffect(() => {
-  if (!pollId) return;
+// useEffect(() => {
+//   if (!pollId) return;
 
-  const fetchInitialHistory = async () => {
-    const res = await fetch(`${baseURL}/api/live-votes/history/${pollId}?interval=${timeInterval}`);
-    const rows = await res.json();
+//   const fetchInitialHistory = async () => {
+//     const res = await fetch(`${baseURL}/api/live-votes/history/${pollId}?interval=${timeInterval}`);
+//     const rows = await res.json();
 
-    const grouped: VoteHistoryPoint[] = [];
+//     const grouped: VoteHistoryPoint[] = [];
 
-    rows.forEach((row: any) => {
-      const time = new Date(row.recorded_time).toLocaleTimeString("en-KE", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+//     rows.forEach((row: any) => {
+//       const time = new Date(row.recorded_time).toLocaleTimeString("en-KE", {
+//         hour: "2-digit",
+//         minute: "2-digit",
+//       });
 
-      let point = grouped.find(p => p.time === time);
-      if (!point) {
-        point = { time };
-        grouped.push(point);
-      }
+//       let point = grouped.find(p => p.time === time);
+//       if (!point) {
+//         point = { time };
+//         grouped.push(point);
+//       }
 
-      const candidate = data?.results.find(c => c.id === row.competitor_id);
-      if (candidate) {
-        point[candidate.name] = Number(row.cumulative_votes ?? 0);
-      }
-    });
+//       const candidate = data?.results.find(c => c.id === row.competitor_id);
+//       if (candidate) {
+//         point[candidate.name] = Number(row.cumulative_votes ?? 0);
+//       }
+//     });
 
-    setVoteHistory(grouped);
-  };
+//     setVoteHistory(grouped);
+//   };
 
-  fetchInitialHistory();
+//   fetchInitialHistory();
 
-  // --- SSE for live updates ---
-  const evtSource = new EventSource(`${baseURL}/api/live-votes/live-stream/${pollId}?interval=${timeInterval}`);
-// In makePoint, ensure ALL candidates are present (even with 0)
-const makePoint = (updates: any[]) => {
-  const point: any = {};
-  data?.results.forEach(candidate => {
-    point[candidate.name] = 0; // default
-  });
-  updates.forEach((u: any) => {
-    const candidate = data?.results.find(c => c.id === u.competitor_id);
-    if (candidate) {
-      point[candidate.name] = Number(u.cumulative_votes);
-    }
-  });
-  return point;
-};
-  evtSource.onmessage = (event) => {
-    const payload = JSON.parse(event.data);
-  if (!payload.updates?.length) return;
+//   // --- SSE for live updates ---
+//   const evtSource = new EventSource(`${baseURL}/api/live-votes/live-stream/${pollId}?interval=${timeInterval}`);
 
-    const timestamp = new Date(payload.timestamp).toLocaleTimeString("en-KE", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+// const makePoint = (updates: any[]) => {
+//   const point: any = {};
+//   data?.results.forEach(candidate => {
+//     point[candidate.name] = 0; // default
+//   });
+//   updates.forEach((u: any) => {
+//     const candidate = data?.results.find(c => c.id === u.competitor_id);
+//     if (candidate) {
+//       point[candidate.name] = Number(u.cumulative_votes);
+//     }
+//   });
+//   return point;
+// };
+//   evtSource.onmessage = (event) => {
+//     const payload = JSON.parse(event.data);
+//   if (!payload.updates?.length) return;
 
-    setVoteHistory((prev) => {
-      if (prev.some(p => p.time === timestamp)){
-        return prev.map((p) => (p.time === timestamp ?{ ...p, ...makePoint(payload.updates) } : p));
-      }
-      const newPoint = { time: timestamp, ...makePoint(payload.updates) };
-      return [...prev, newPoint].slice(-100);
-    });
-  };
+//     const timestamp = new Date(payload.timestamp).toLocaleTimeString("en-KE", {
+//       hour: "2-digit",
+//       minute: "2-digit",
+//     });
 
-  evtSource.onerror = (e) => {
-    console.error("SSE error:", e);
-    evtSource.close();
-  };
+//     setVoteHistory((prev) => {
+//       if (prev.some(p => p.time === timestamp)){
+//         return prev.map((p) => (p.time === timestamp ?{ ...p, ...makePoint(payload.updates) } : p));
+//       }
+//       const newPoint = { time: timestamp, ...makePoint(payload.updates) };
+//       return [...prev, newPoint].slice(-100);
+//     });
+//   };
 
-  return () => evtSource.close();
-}, [pollId, timeInterval, data]);
+//   evtSource.onerror = (e) => {
+//     console.error("SSE error:", e);
+//     evtSource.close();
+//   };
+
+//   return () => evtSource.close();
+// }, [pollId, timeInterval, data]);
   // Countdown timer for voting expiration
   useEffect(() => {
     if (!data?.voting_expires_at) return;
@@ -484,7 +484,7 @@ const isAnimationActive=true;
     <BarChart2 className="w-5 h-5 mr-2 text-blue-600" />
     Live Vote Tracker
   </h2>
-   <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+   {/* <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
 <ResponsiveContainer width="100%" height={350}>
   
   <LineChart
@@ -521,7 +521,7 @@ const isAnimationActive=true;
   </LineChart>
 </ResponsiveContainer>
 
-</div>
+</div> */}
 </div>
 
             {/* Bar Chart */}
