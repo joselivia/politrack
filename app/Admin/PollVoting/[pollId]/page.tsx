@@ -594,7 +594,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
 )}
 
                   {q.type === "single-choice" && q.options && (
-                    <div className="space-y-3">
+                    <div className="flex flex-wrap gap-4">
                       {q.options.map((option) => (
                         <label
                           key={option.id}
@@ -613,7 +613,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                             }
                             className="form-radio h-5 w-5 text-blue-600"
                           />
-                          <span className="ml-3 text-base text-gray-700">
+                          <span className="ml-2 text-base text-gray-700">
                             {option.optionText}
                           </span>
                         </label>
@@ -639,7 +639,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                   )}
 
                   {q.type === "yes-no-notsure" && q.options && (
-                    <div className="space-y-3">
+                    <div className="flex flex-wrap gap-4">
                       {q.options.map((option) => (
                         <label
                           key={option.id}

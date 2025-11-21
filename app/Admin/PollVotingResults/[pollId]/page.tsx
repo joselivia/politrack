@@ -246,7 +246,7 @@ index
           Poll Results: {poll.title}
         </h2>
 
-        <div className=" flex items-center text-lg text-gray-600 p-x-4 ">
+        <div className=" flex flex-wrap items-center justify-center py-3 text-lg text-gray-600  ">
           Category: <span className="font-semibold">{poll.category}</span>
           {poll.category === "Presidential" && poll.presidential && (
             <span className="ml-2">
@@ -263,7 +263,7 @@ index
               <span className="ml-2">
                 | County: <span className="font-semibold">{loc.county}</span>
               </span>
-<div className="flex flex-col sm:flex-row gap-3 px-3">
+<div className="flex gap-3 px-3">
   {/* Constituency */}
   <select
     value={constituency}
@@ -315,8 +315,8 @@ index
                 <h4 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
                   <PieChartIcon className="w-5 h-5 mr-2 text-purple-500" />
                   Gender Distribution
-                </h4>
-                <ResponsiveContainer width="100%" height={300}>
+                </h4>   <div className="max-h-[300px]">
+                <ResponsiveContainer width="100%"  height={300}>
                   <PieChart>
                     <Pie
                       data={demographics.gender}
@@ -348,7 +348,7 @@ index
                     <Tooltip />
                     <Legend />
                   </PieChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer></div>
               </div>
 
               {/* Age Distribution */}
@@ -398,59 +398,88 @@ index
                 questionResult.type === "yes-no-notsure" ? (
                   questionResult.choices &&
                   questionResult.choices.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {/* Pie Chart */}
-                      <div className="w-full h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={questionResult.choices}
-                              dataKey="count"
-                              nameKey="label"
-                              cx="50%"
-                              cy="50%"
-                              outerRadius={100}
-                              fill="#8884d8"
-                              labelLine={false}
-                              label={renderCustomizedLabel}
-                            >
-                              {questionResult.choices.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${questionResult.questionId}-${index}`}
-                                  fill={COLORS[index % COLORS.length]}
-                                />
-                              ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
+               (() => {
+  const normalizedChoices =
+    questionResult.choices?.map((c) => ({
+      ...c,
+      label: c.label.length > 15 ? c.label.slice(0, 15) + "..." : c.label,percentage: c.percentage,
+    })).sort((a, b) => b.percentage - a.percentage);
 
-                      {/* Bar Chart */}
-                      <div className="w-full h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RechartsBarChart
-                            data={questionResult.choices}
-                            margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="label" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="count">
-                              {questionResult.choices.map((entry, index) => (
-                                <Cell
-                                  key={`bar-cell-${index}`}
-                                  fill={COLORS[index % COLORS.length]}
-                                />
-                              ))}
-                            </Bar>
-                          </RechartsBarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+      {/* Pie Chart Scrollable */}
+      <div className="w-full h-[400px] overflow-x-auto overflow-y-hidden">
+        <div className="min-w-[600px] h-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={normalizedChoices}
+                dataKey="count"
+                nameKey="label"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                labelLine={false}
+                label={renderCustomizedLabel}
+              >
+                {normalizedChoices.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Bar Chart Scrollable */}
+   <div
+  className="overflow-x-auto"
+  style={{ width: "100%", height: "350px" }}
+>
+  <div
+    style={{
+      width: `${Math.max(normalizedChoices.length * 30, 500)}px`,
+      height: "100%",
+    }}
+  >
+    <ResponsiveContainer width="100%" height="100%">
+      <RechartsBarChart data={normalizedChoices}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          dataKey="label"
+          interval={0}   angle={-15}  
+  textAnchor="end"
+          tick={{ fontSize: 12 }}
+          tickFormatter={(value) =>
+            value.length > 15 ? value.slice(0, 15) + "..." : value
+          }
+        />
+        <YAxis />
+ <Tooltip
+  formatter={(value: number) => `${value.toFixed(1)}%`}
+/>
+
+        <Legend />
+        <Bar dataKey="percentage">
+          {normalizedChoices.map((entry, index) => (
+            <Cell key={index} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Bar>
+      </RechartsBarChart>
+    </ResponsiveContainer>
+  </div>
+</div>
+
+    </div>
+  );
+})()
+
                   ) : (
                     <p className="text-gray-500">
                       No choices recorded for this question yet.

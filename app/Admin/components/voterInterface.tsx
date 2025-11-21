@@ -106,8 +106,6 @@ const [isRegistered, setIsRegistered] = useState(false);
     checkIfVoted();
   }, [id, voterId, data?.allow_multiple_votes, localAllowMultipleVotes]);
 // --- checkIfVoted function moved outside useEffect ---
-
-
   // --- Countdown Timer ---
   useEffect(() => {
     if (!data?.voting_expires_at) return;

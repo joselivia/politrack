@@ -90,7 +90,7 @@ const LiveDetailsReport = ({ compact = false }: any) => {
   const [countdown, setCountdown] = useState<string>("");
   const [voteHistory, setVoteHistory] = useState<VoteHistoryPoint[]>([]);
 const [timeInterval, setTimeInterval] = useState("15m");
-
+  const [competitorQuestion, setCompetitorQuestion] = useState<string | null>(null);
 // useEffect(() => {
 //   if (!pollId) return;
 
@@ -186,6 +186,24 @@ const [timeInterval, setTimeInterval] = useState("15m");
 
     return () => clearInterval(interval);
   }, [data?.voting_expires_at]);
+  useEffect(() => {
+  if (!pollId) return;
+
+  const fetchCompetitorQuestion = async () => {
+    try {
+      const res = await fetch(`${baseURL}/api/votes/${pollId}/questions`);
+      const json = await res.json();
+      const question = json.find((q: any) => q.is_competitor_question);
+      setCompetitorQuestion(question?.question_text || "Select Your Candidate");
+    } catch (err) {
+      console.error("Error fetching competitor question:", err);
+      setCompetitorQuestion("Select Your Candidate");
+    }
+  };
+
+  fetchCompetitorQuestion();
+}, [pollId]);
+
   if (!pollId) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -566,9 +584,11 @@ const [timeInterval, setTimeInterval] = useState("15m");
               </ResponsiveContainer></div>
             </div>
           </div>
-
+<h2 className="text-lg font-semibold text-gray-800 mb-2">
+      {competitorQuestion || "Select Your Candidate"}
+    </h2>
           {/* Results Table */}
-          <div className="rounded-lg border border-gray-200 flex flex-col md:flex-row overflow-hidden">
+          <div className="rounded-lg border border-gray-200 flex flex-col md:flex-row overflow-hidden">   
            <div className="w-full md:w-3/4 overflow-x-auto">
             <table className="min-w-full bg-white text-sm">
               <thead className="bg-gray-100 border-b border-gray-200">
