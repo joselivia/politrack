@@ -17,7 +17,6 @@ interface CommentSectionProps {
   pollId: number;
 }
 
-// ⏳ Helper function to show "time ago" style
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -130,7 +129,7 @@ export default function CommentSection({ pollId }: CommentSectionProps) {
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center space-x-2 p-4 border-b bg-gray-50">
+      <div className="flex items-center space-x-2 p-2 border-b bg-gray-50">
         <MessageCircle className="w-5 h-5 text-blue-600" />
         <h2 className="text-lg font-semibold text-gray-800">Comments</h2>
       </div>

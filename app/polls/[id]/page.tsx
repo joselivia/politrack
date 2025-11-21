@@ -186,8 +186,6 @@ const [timeInterval, setTimeInterval] = useState("15m");
 
     return () => clearInterval(interval);
   }, [data?.voting_expires_at]);
-const isAnimationActive=true;
-  // Show loading state when no poll ID is available yet
   if (!pollId) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -639,7 +637,7 @@ const isAnimationActive=true;
               </tbody>
             </table>
 </div>
-<div className="w-full md:w-1/4 border-t md:border-t-0 md:border-l border-gray-200 p-4 bg-gray-50 h-[500px]">
+<div className="w-full md:w-1/4 border-t md:border-t-0 md:border-l border-gray-200 p-2 bg-gray-50 h-[800px]">
   <CommentSection pollId={data.id} />
 </div>
 
