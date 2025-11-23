@@ -106,7 +106,7 @@ const [isRegistered, setIsRegistered] = useState(false);
     };
 useEffect(() => {
   if (!data || !voterId) return;
-  checkIfVoted(data);
+  checkIfVoted();
 }, [data, voterId]);
 
   // --- Countdown Timer ---
@@ -131,20 +131,28 @@ useEffect(() => {
 
     return () => clearInterval(interval);
   }, [data?.voting_expires_at]);
-    const checkIfVoted = async (pollData?: PollData) => {
+const checkIfVoted = async () => {
   try {
     const res = await axios.get(`${baseURL}/api/votes/status`, {
       params: { pollId: id, voter_id: voterId },
     });
+
     const already = res.data.alreadyVoted;
-    const allowMultiple = pollData ? pollData.allow_multiple_votes : data?.allow_multiple_votes;
-    setHasVoted(already && !allowMultiple);
-    if (already && !allowMultiple) setMessage("You have already voted in this poll.");
-    else setMessage(null);
+
+    setHasVoted(already);
+
+    if (already) {
+      setMessage("You have already voted in this poll.");
+      setIsRegistered(false);   // ⛔ STOP candidate selection
+    } else {
+      setMessage(null);
+    }
+
   } catch (err) {
     console.error("Error checking vote status:", err);
   }
 };
+
   // --- Voting Logic ---
   const handleVote = async () => {
     if (!selectedCandidateId || !data || !voterId) return;
@@ -182,6 +190,7 @@ if (region !== "National" && (!county || !constituency || !ward)) {
         setConstituency("");
         setWard(""); 
 await checkIfVoted();
+setIsRegistered(false);  
         if (!isAdmin) {
           setTimeout(() => router.replace("/Thankyou"), 1000);
         }
@@ -312,7 +321,7 @@ if (isVotingClosed) {
   )}
 </div>
   {/* ✅ Continue Button */}
-  {!isRegistered && !hasVoted && (
+  {!hasVoted && !isRegistered && (
 <button
   onClick={() => {
     if (isRegistered) return;
