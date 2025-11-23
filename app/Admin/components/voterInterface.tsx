@@ -75,6 +75,10 @@ const [isRegistered, setIsRegistered] = useState(false);
   // --- Fetch Data ---
   useEffect(() => {
     if (!id || !voterId ) return;
+  fetchData();
+  fetchCompetitorQuestion();
+  }, [id, voterId]);
+
    const fetchData = async () => {
       try {
         const res = await axios.get(`${baseURL}/api/aspirant/${id}`);
@@ -100,12 +104,11 @@ const [isRegistered, setIsRegistered] = useState(false);
         console.error("Error fetching competitor question:", err);
       }
     };
+useEffect(() => {
+  if (!data || !voterId) return;
+  checkIfVoted(data);
+}, [data, voterId]);
 
-    fetchData();
-    fetchCompetitorQuestion();
-    checkIfVoted();
-  }, [id, voterId, data?.allow_multiple_votes, localAllowMultipleVotes]);
-// --- checkIfVoted function moved outside useEffect ---
   // --- Countdown Timer ---
   useEffect(() => {
     if (!data?.voting_expires_at) return;
