@@ -174,12 +174,14 @@ if (region !== "National" && (!county || !constituency || !ward)) {
 }
     setIsVoting(true);
     setMessage(null);
-
+const voterIdToUse = data.allow_multiple_votes
+? Math.random().toString(36).substring(2, 12) 
+: voterId;
     try {
       const response = await axios.post(`${baseURL}/api/votes`, {
         id,
         competitorId: selectedCandidateId,
-        voter_id: voterId,
+        voter_id: voterIdToUse,
         name,
         gender,
         region,
