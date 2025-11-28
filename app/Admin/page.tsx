@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import AdminLogin from "./Login/page";
 
 export default function Home() {

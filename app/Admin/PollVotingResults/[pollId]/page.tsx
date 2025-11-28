@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
 import {
@@ -26,6 +25,8 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import domtoimage from "dom-to-image-more";
+import { PDFDocument, rgb } from "pdf-lib";
 interface Competitor {
   id: number;
   name: string;
@@ -45,6 +46,7 @@ interface Question {
   options?: Option[];
   isCompetitorQuestion?: boolean;
 }
+
 interface locationData {
   region: string;
   county: string;
@@ -115,21 +117,29 @@ const PollVotingResultsPage = () => {
   const [county, setCounty] = useState(prefilledCounty);
   const [constituency, setConstituency] = useState("");
   const [ward, setWard] = useState("");
-const constituencies = results
-  ? [...new Set(results.location
-      .filter(loc => !county || loc.county === county)
-      .map(loc => loc.constituency)
-    )]
-  : [];
-
-const wards = results
-  ? [...new Set(results.location
-      .filter(loc => !constituency || loc.constituency === constituency)
-      .map(loc => loc.ward)
-    )]
-  : [];
-
   const route = useRouter();
+const [pdfLoading, setPdfLoading] = useState(false);
+
+  const constituencies = results
+    ? [
+        ...new Set(
+          results.location
+            .filter((loc) => !county || loc.county === county)
+            .map((loc) => loc.constituency)
+        ),
+      ]
+    : [];
+
+  const wards = results
+    ? [
+        ...new Set(
+          results.location
+            .filter((loc) => !constituency || loc.constituency === constituency)
+            .map((loc) => loc.ward)
+        ),
+      ]
+    : [];
+
   useEffect(() => {
     if (!pollId) {
       setError("No poll ID provided.");
@@ -140,10 +150,10 @@ const wards = results
     const fetchPollResults = async () => {
       setLoading(true);
       const query = new URLSearchParams();
-
       if (county) query.append("county", county);
       if (constituency) query.append("constituency", constituency);
       if (ward) query.append("ward", ward);
+
       try {
         const response = await fetch(
           `${baseURL}/api/Opinions/${pollId}/results?${query.toString()}`
@@ -167,40 +177,6 @@ const wards = results
     fetchPollResults();
   }, [pollId, county, constituency, ward]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-        <p className="ml-4 text-xl text-gray-700">Loading results...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-pink-100 p-8 text-center">
-        <Frown className="h-20 w-20 text-red-500 mb-6" />
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Error Loading Results
-        </h1>
-        <p className="text-lg text-red-600 mb-8">{error}</p>
-      </div>
-    );
-  }
-
-  if (!results || !results.poll) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-        <p className="text-xl text-gray-700">
-          No results data available for this poll yet.
-        </p>
-      </div>
-    );
-  }
-
-  const { poll, aggregatedResponses = [], demographics = {} as any } = results;
-  const loc = results.location?.[0] || null;
-
   const renderCustomizedLabel = ({
     cx,
     cy,
@@ -208,7 +184,6 @@ const wards = results
     innerRadius,
     outerRadius,
     percent,
-index
   }: any) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
@@ -226,97 +201,217 @@ index
       </text>
     );
   };
+const generatePDF = async () => {
+  if (!results) return;
+  try {
+    setPdfLoading(true); 
+    const pdf = await PDFDocument.create();
+    const sections = document.querySelectorAll('.export-section');
+
+    for (const section of sections) {
+      const el = section as HTMLElement;
+
+      const originalMaxHeight = el.style.maxHeight;
+      const originalOverflow = el.style.overflow;
+
+      el.style.maxHeight = 'none';
+      el.style.overflow = 'visible';
+
+      const clone = el.cloneNode(true) as HTMLElement;
+
+
+      const openEndedContainers = clone.querySelectorAll('.max-h-80.overflow-y-auto');
+
+      openEndedContainers.forEach(container => {
+        const div = container as HTMLElement;
+        div.style.maxHeight = 'none';
+        div.style.overflow = 'visible';
+
+        div.classList.remove('max-h-80', 'overflow-y-auto');
+      });
+
+      const offscreen = document.createElement('div');
+      offscreen.style.position = 'fixed';
+      offscreen.style.top = '-9999px';
+      offscreen.style.left = '-9999px';
+      offscreen.appendChild(clone);
+      document.body.appendChild(offscreen);
+
+      const pngData = await domtoimage.toPng(clone, { quality: 1 });
+      const pngBytes = await (await fetch(pngData)).arrayBuffer();
+      const img = await pdf.embedPng(pngBytes);
+      const { width, height } = img.scale(1);
+
+      const page = pdf.addPage([width, height]);
+      page.drawImage(img, { x: 0, y: 0, width, height });
+
+      document.body.removeChild(offscreen);
+
+      el.style.maxHeight = originalMaxHeight;
+      el.style.overflow = originalOverflow;
+    }
+
+    const pdfBytes = await pdf.save();
+    const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'poll-report.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.error('PDF generation failed', err);
+  } finally {
+    setPdfLoading(false); // stop loading
+  }
+};
+
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f9ff] to-[#e0e7ff]">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+        <p className="ml-4 text-xl text-gray-700">Loading results...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#fef2f8] to-[#fce7f3] p-8 text-center">
+        <Frown className="h-20 w-20 text-red-500 mb-6" />
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          Error Loading Results
+        </h1>
+        <p className="text-lg text-red-600 mb-8">{error}</p>
+      </div>
+    );
+  }
+
+  if (!results || !results.poll) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f0f9ff] to-[#e0e7ff] p-8">
+        <p className="text-xl text-gray-700">
+          No results data available for this poll yet.
+        </p>
+      </div>
+    );
+  }
+
+  const { poll, aggregatedResponses = [], demographics = {} as any } = results;
+  const loc = results.location?.[0] || null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-3 lg:p-3">
-      <button
-        onClick={() => route.back()}
-        className="inline-flex items-center gap-2 px-2 py-2 
-                   rounded-xl bg-blue-400 border border-gray-200 
-                   font-medium shadow-sm 
-                   hover:bg-blue-500 mb-4
-                   transition-all duration-300"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back
-      </button>
-      <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-6 flex items-center">
-          <BarChart className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />{" "}
+    <div className="min-h-screen bg-gradient-to-br from-[#f5f9ff] to-[#eef2ff] p-4 sm:p-6 lg:p-8">
+      <div className="flex justify-between mb-6">
+        <button
+          onClick={() => route.back()}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500 text-white font-medium shadow-sm hover:bg-blue-600 transition-all"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+<button
+  onClick={generatePDF}
+  disabled={!results || loading || pdfLoading}
+  className={`inline-flex items-center gap-2 cursor-pointer px-6 py-2 rounded-xl font-semibold shadow-md transition-all
+  ${
+    !results || loading || pdfLoading
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-green-600 text-white hover:bg-green-700"
+  }`}
+>
+  {pdfLoading ? (
+
+      "Generating PDF..."
+ 
+  ) : (
+    "Download PDF Report"
+  )}
+</button>
+
+      </div>
+
+      <div className="export-section shadow-xl rounded-2xl p-3 sm:p-4">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-6 flex items-center">
+          <BarChart className="mr-3 text-blue-600 w-10 h-10" />
           Poll Results: {poll.title}
         </h2>
 
-        <div className=" flex flex-wrap items-center justify-center py-3 text-lg text-gray-600  ">
-          Category: <span className="font-semibold">{poll.category}</span>
+        <div className="flex flex-wrap items-center justify-center gap-4 py-4 text-lg text-gray-600">
+          <span>
+            Category: <strong>{poll.category}</strong>
+          </span>
           {poll.category === "Presidential" && poll.presidential && (
-            <span className="ml-2">
-              | Presidential:{" "}
-              <span className="font-semibold">{poll.presidential}</span>
+            <span>
+              | Presidential: <strong>{poll.presidential}</strong>
             </span>
           )}
           {loc && (
             <>
-              <span className="ml-2">
-                | Region:{" "}
-                <span className="font-semibold">{loc.region || "Region"}</span>
+              <span>
+                | Region: <strong>{loc.region || "N/A"}</strong>
               </span>
-              <span className="ml-2">
-                | County: <span className="font-semibold">{loc.county}</span>
+              <span>
+                | County: <strong>{loc.county}</strong>
               </span>
-<div className="flex gap-3 px-3">
-  {/* Constituency */}
-  <select
-    value={constituency}
-    onChange={(e) => {
-      setConstituency(e.target.value);
-      setWard(""); 
-    }}
-    className="w-full z-100 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 bg-white"
-  >
-    <option value="">Select Constituency</option>
-    {constituencies.map((cst) => (
-      <option key={cst} value={cst}>
-        {cst}
-      </option>
-    ))}
-  </select>
-
-  {/* Ward */}
-  <select
-    value={ward}
-    onChange={(e) => setWard(e.target.value)}
-    disabled={!constituency}
-    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 ${
-      !constituency ? "bg-gray-100 cursor-not-allowed" : "bg-white"
-    }`}
-  >
-    <option value="">Select Ward</option>
-    {wards.map((w) => (
-      <option key={w} value={w}>
-        {w}
-      </option>
-    ))}
-  </select>
-</div>
-
             </>
+          )}
+          {loc && (
+            <div className="flex gap-3 mt-2">
+              <select
+                value={constituency}
+                onChange={(e) => {
+                  setConstituency(e.target.value);
+                  setWard("");
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 bg-white"
+              >
+                <option value="">All Constituencies</option>
+                {constituencies.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={ward}
+                onChange={(e) => setWard(e.target.value)}
+                disabled={!constituency}
+                className={`px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 ${
+                  !constituency ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+                }`}
+              >
+                <option value="">All Wards</option>
+                {wards.map((w) => (
+                  <option key={w} value={w}>
+                    {w}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
 
+        {/* Demographics */}
         {demographics && demographics.totalRespondents > 0 ? (
-          <div className="mb-10 p-6 bg-gray-50 rounded-xl shadow-md border border-gray-200">
+          <div className="mb-10 p-6 bg-[#f9fafb] rounded-xl shadow-md border border-gray-200 break-inside-avoid">
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Users className="w-6 h-6 mr-3 text-gray-600" /> Respondent
-              Demographics{" "}
+              <Users className="w-7 h-7 mr-3 text-gray-600" /> Respondent
+              Demographics
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Gender Distribution */}
-              <div>
+              <div
+                className="chart-wrapper"
+                style={{ width: "100%", height: "auto" }}
+              >
                 <h4 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
-                  <PieChartIcon className="w-5 h-5 mr-2 text-purple-500" />
+                  <PieChartIcon className="w-5 h-5 mr-2 text-purple-500" />{" "}
                   Gender Distribution
-                </h4>   <div className="max-h-[300px]">
-                <ResponsiveContainer width="100%"  height={300}>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
                   <PieChart>
                     <Pie
                       data={demographics.gender}
@@ -324,40 +419,32 @@ index
                       nameKey="label"
                       cx="50%"
                       cy="50%"
-                      outerRadius={100}
-                      fill="#8884d8"
+                      outerRadius={120}
                       labelLine={false}
                       label={renderCustomizedLabel}
                     >
-                      {demographics.gender.map(
-                        (
-                          entry: {
-                            label: string;
-                            count: number;
-                            percentage: number;
-                          },
-                          index: number
-                        ) => (
-                          <Cell
-                            key={`cell-gender-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        )
-                      )}
+                      {demographics.gender.map((_: any, i: number) => (
+                        <Cell
+                          key={`gender-${i}`}
+                          fill={COLORS[i % COLORS.length]}
+                        />
+                      ))}
                     </Pie>
                     <Tooltip />
                     <Legend />
                   </PieChart>
-                </ResponsiveContainer></div>
+                </ResponsiveContainer>
               </div>
 
-              {/* Age Distribution */}
-              <div>
+              <div
+                className="chart-wrapper"
+                style={{ width: "100%", height: "auto" }}
+              >
                 <h4 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
-                  <BarChart className="w-5 h-5 mr-2 text-green-500" />
-                  Age Distribution
+                  <BarChart className="w-5 h-5 mr-2 text-green-500" /> Age
+                  Distribution
                 </h4>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={400}>
                   <RechartsBarChart data={demographics.ageRanges}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="label" />
@@ -371,149 +458,132 @@ index
             </div>
           </div>
         ) : (
-          <div className="mb-10 p-6 bg-gray-50 rounded-xl shadow-md border border-gray-200 text-center text-gray-600">
+          <div className="mb-10 p-6 bg-[#f9fafb] rounded-xl shadow-md border border-gray-200 text-center text-gray-600">
             No demographic data available yet.
           </div>
         )}
 
+        {/* Question Results */}
         {Array.isArray(aggregatedResponses) &&
         aggregatedResponses.length > 0 ? (
           <div className="space-y-10">
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Scale className="w-6 h-6 mr-3 text-gray-600" /> Question-wise
+              <Scale className="w-7 h-7 mr-3 text-gray-600" /> Question-wise
               Results
             </h3>
-            {aggregatedResponses.map((questionResult, index) => (
-              <div
-                key={questionResult.questionId}
-                className="bg-white p-6 rounded-xl shadow-md border border-gray-200"
-              >
-                <h4 className="text-xl font-semibold text-gray-800 mb-4">
-                 <span>{ index+1}.</span> {questionResult.questionText}
-                </h4>
-                {/* Render different charts based on question type */}
-                {questionResult.type === "single-choice" ||
-                questionResult.type === "multi-choice" ||
-                questionResult.isCompetitorQuestion ||
-                questionResult.type === "yes-no-notsure" ? (
-                  questionResult.choices &&
-                  questionResult.choices.length > 0 ? (
-               (() => {
-  const normalizedChoices =
-    questionResult.choices?.map((c) => ({
-      ...c,
-      label: c.label.length > 15 ? c.label.slice(0, 15) + "..." : c.label,percentage: c.percentage,
-    })).sort((a, b) => b.percentage - a.percentage);
+            {aggregatedResponses.map((questionResult, index) => {
+              const normalizedChoices = questionResult.choices
+                ?.map((c) => ({
+                  ...c,
+                  label:
+                    c.label.length > 15
+                      ? c.label.slice(0, 15) + "..."
+                      : c.label,
+                }))
+                .sort((a, b) => b.percentage - a.percentage);
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              return (
+                <div
+                  key={questionResult.questionId}
+                  className="bg-white p-6 rounded-xl shadow-md border border-gray-200 break-inside-avoid"
+                >
+                  <h4 className="text-xl font-semibold text-gray-800 mb-4">
+                    {index + 1}. {questionResult.questionText}
+                  </h4>
 
-      {/* Pie Chart Scrollable */}
-      <div className="w-full h-[400px] overflow-x-auto overflow-y-hidden">
-        <div className="min-w-[600px] h-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={normalizedChoices}
-                dataKey="count"
-                nameKey="label"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                labelLine={false}
-                label={renderCustomizedLabel}
-              >
-                {normalizedChoices.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+                  {/* Charts if present */}
+                  {normalizedChoices && normalizedChoices.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
+                      <div
+                        className="chart-wrapper"
+                        style={{ width: "100%", height: 400 }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={normalizedChoices}
+                              dataKey="count"
+                              nameKey="label"
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={120}
+                              labelLine={false}
+                              label={renderCustomizedLabel}
+                            >
+                              {normalizedChoices.map((_, i) => (
+                                <Cell
+                                  key={`pie-${i}`}
+                                  fill={COLORS[i % COLORS.length]}
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
 
-      {/* Bar Chart Scrollable */}
-   <div
-  className="overflow-x-auto"
-  style={{ width: "100%", height: "350px" }}
->
-  <div
-    style={{
-      width: `${Math.max(normalizedChoices.length * 30, 500)}px`,
-      height: "100%",
-    }}
-  >
-    <ResponsiveContainer width="100%" height="100%">
-      <RechartsBarChart data={normalizedChoices}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="label"
-          interval={0}   angle={-15}  
-  textAnchor="end"
-          tick={{ fontSize: 12 }}
-          tickFormatter={(value) =>
-            value.length > 15 ? value.slice(0, 15) + "..." : value
-          }
-        />
-        <YAxis />
- <Tooltip
-  formatter={(value: number) => `${value.toFixed(1)}%`}
-/>
+                      <div
+                        className="chart-wrapper"
+                        style={{ width: "100%", height: 400 }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsBarChart data={normalizedChoices}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                              dataKey="label"
+                              angle={-25}
+                              textAnchor="end"
+                              interval={0}
+                              height={120}
+                            />
+                            <YAxis />
+                            <Tooltip
+                              formatter={(v: number) => `${v.toFixed(1)}%`}
+                            />
+                            <Bar dataKey="percentage" maxBarSize={30}>
+                              {normalizedChoices.map((_, i) => (
+                                <Cell
+                                  key={`bar-${i}`}
+                                  fill={COLORS[i % COLORS.length]}
+                                />
+                              ))}
+                            </Bar>
+                          </RechartsBarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
 
-        <Legend />
-        <Bar dataKey="percentage">
-          {normalizedChoices.map((entry, index) => (
-            <Cell key={index} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Bar>
-      </RechartsBarChart>
-    </ResponsiveContainer>
-  </div>
-</div>
+                  {/* Open-ended responses if present */}
+                  {questionResult.openEndedResponses?.length ? (
+                    <div className="p-5 rounded-lg max-h-80 overflow-y-auto">
+                      <h5 className="font-semibold text-gray-700 mb-3">
+                        Open-Ended Responses:
+                      </h5>
+                      <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                        {questionResult.openEndedResponses.map((resp, i) => (
+                          <li key={i}>{resp}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
 
-    </div>
-  );
-})()
-
-                  ) : (
-                    <p className="text-gray-500">
-                      No choices recorded for this question yet.
-                    </p>
-                  )
-                ) : questionResult.type === "open-ended" &&
-                  questionResult.openEndedResponses &&
-                  questionResult.openEndedResponses.length > 0 ? (
-                  <div className="bg-gray-100 p-4 rounded-md mt-4 max-h-60 overflow-y-auto custom-scrollbar">
-                    <h5 className="font-semibold text-gray-700 mb-2">
-                      Open-Ended Responses:
-                    </h5>
-                    <ul className="list-disc list-inside text-gray-700">
-                      {questionResult.openEndedResponses.map(
-                        (response, index) => (
-                          <li key={index} className="mb-1">
-                            {response}
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                ) : (
-                  <p className="text-gray-500">
-                    No responses available for this question type yet.
-                  </p>
-                )}
-              </div>
-            ))}
+                  {/* Fallback if nothing exists */}
+                  {!normalizedChoices?.length &&
+                    !questionResult.openEndedResponses?.length && (
+                      <p className="text-gray-500 italic">
+                        No responses recorded yet.
+                      </p>
+                    )}
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className="mt-10 p-6 bg-indigo-50 rounded-xl shadow-md border border-indigo-200 text-center text-indigo-600">
-            <MessageSquareText className="w-12 h-12 mx-auto mb-4 text-indigo-400" />
-            <p className="text-xl">
+          <div className="mt-10 p-8 bg-[#eef2ff] rounded-xl shadow-md border border-indigo-200 text-center">
+            <MessageSquareText className="w-16 h-16 mx-auto mb-4 text-indigo-500" />
+            <p className="text-xl text-indigo-700">
               No responses have been recorded for this poll yet.
             </p>
           </div>

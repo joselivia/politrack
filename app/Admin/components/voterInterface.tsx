@@ -73,11 +73,15 @@ const [isRegistered, setIsRegistered] = useState(false);
   }, []);
 
   // --- Fetch Data ---
-  useEffect(() => {
-    if (!id || !voterId ) return;
-  fetchData();
-  fetchCompetitorQuestion();
-  }, [id, voterId]);
+ useEffect(() => {
+  if (!id || !voterId) return;
+  (async () => {
+    await checkIfVoted();
+    await fetchData();
+    await fetchCompetitorQuestion();
+  })();
+}, [id, voterId]);
+
 
    const fetchData = async () => {
       try {
@@ -140,13 +144,15 @@ const checkIfVoted = async () => {
     const already = res.data.alreadyVoted;
 
     setHasVoted(already);
+if (!data?.allow_multiple_votes && already) {
+  setMessage("You have already voted in this poll.");
+  setHasVoted(true);
+  setIsRegistered(false);
+} else {
+  setHasVoted(false);  
+  setMessage(null);
+}
 
-    if (already) {
-      setMessage("You have already voted in this poll.");
-      setIsRegistered(false);   // ⛔ STOP candidate selection
-    } else {
-      setMessage(null);
-    }
 
   } catch (err) {
     console.error("Error checking vote status:", err);
@@ -200,7 +206,7 @@ setIsRegistered(false);
         setMessage("⚠️ You have already voted in this poll.");
       } else {
         console.error("Error voting:", error);
-        setMessage("❌ Failed to record vote. Please try again.");
+        setMessage("❌ Multiple requests detected.");
       }
     } finally {
       setIsVoting(false);
@@ -255,9 +261,11 @@ if (isVotingClosed) {
           </button>
         )}
       </div>
-{hasVoted  ? (
+{!data.allow_multiple_votes && hasVoted ? (
   <div className="bg-white mt-6 p-4 rounded-lg shadow-md flex justify-center items-center">
-        <p className="text-lg font-semibold mb-4">{message}</p>
+    <p className="text-lg font-semibold mb-4">
+      You have already voted in this poll.
+    </p>
   </div>
 ) : (
        <div className="bg-white mt-6 p-4 rounded-lg shadow-md">
