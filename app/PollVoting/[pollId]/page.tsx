@@ -12,7 +12,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import { countyConstituencyMap, countyAssemblyWardMap } from "../../dummyCreatePoll/createpoll/Places";
+import { countyConstituencyMap, countyAssemblyWardMap } from "@/app/Admin/dummyCreatePoll/createpoll/Places";
+
 
 interface Competitor {
   id: number;

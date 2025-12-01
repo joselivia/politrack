@@ -202,25 +202,25 @@ const [pdfLoading, setPdfLoading] = useState(false);
     );
   };
 const generatePDF = async () => {
-  if (!results) return;
-  try {
-    setPdfLoading(true); 
-    const pdf = await PDFDocument.create();
-    const sections = document.querySelectorAll('.export-section');
+if (!results) return;
+try {
+ setPdfLoading(true); 
+ const pdf = await PDFDocument.create();
+ const sections = document.querySelectorAll('.export-section');
 
-    for (const section of sections) {
-      const el = section as HTMLElement;
+ for (const section of sections) {
+ const el = section as HTMLElement;
 
-      const originalMaxHeight = el.style.maxHeight;
-      const originalOverflow = el.style.overflow;
+ const originalMaxHeight = el.style.maxHeight;
+const originalOverflow = el.style.overflow;
 
-      el.style.maxHeight = 'none';
-      el.style.overflow = 'visible';
+el.style.maxHeight = 'none';
+ el.style.overflow = 'visible';
 
-      const clone = el.cloneNode(true) as HTMLElement;
+const clone = el.cloneNode(true) as HTMLElement;
 
 
-      const openEndedContainers = clone.querySelectorAll('.max-h-80.overflow-y-auto');
+ const openEndedContainers = clone.querySelectorAll('.max-h-80.overflow-y-auto');
 
       openEndedContainers.forEach(container => {
         const div = container as HTMLElement;
@@ -263,7 +263,7 @@ const generatePDF = async () => {
   } catch (err) {
     console.error('PDF generation failed', err);
   } finally {
-    setPdfLoading(false); // stop loading
+    setPdfLoading(false); 
   }
 };
 

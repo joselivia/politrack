@@ -213,14 +213,14 @@ const AllPollsPage = () => {
                 {/* Buttons */}
                 <div className="mt-4 flex flex-col sm:flex-row gap-3">
                   <Link
-                    href={`/Admin/PollVotingResults/${poll.id}`}
+                    href={`/PollVotingResults/${poll.id}`}
                     className="block text-indigo-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
                   >
                     View Responses
                   </Link>
 
                     <Link
-                      href={{ pathname: `/Admin/PollVoting/${poll.id}`, query: { region: poll.region, county: poll.county } }}
+                      href={{ pathname: `/PollVoting/${poll.id}`, query: { region: poll.region, county: poll.county } }}
                       className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
                     >
                       View Poll & Vote

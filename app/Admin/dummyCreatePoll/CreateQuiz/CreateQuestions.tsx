@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { baseURL } from "@/config/baseUrl";
+import FixedQuestionBar from "./fixedbarButtons";
 interface Aspirant {
   name: string;
   party: string;
@@ -22,6 +23,12 @@ interface Aspirant {
 
 interface GenericOption {
   text: string;
+}
+interface RatingQuestion {
+  id: string;
+  type: "rating";
+  questionText: string;
+  scale: number;
 }
 
 interface SingleChoiceQuestion {
@@ -55,7 +62,8 @@ type PollQuestion =
   | SingleChoiceQuestion
   | OpenEndedQuestion
   | YesNoNotSureQuestion
-  | MultiChoiceQuestion;
+  | MultiChoiceQuestion
+  | RatingQuestion;
 
 type State = {
   pollId: string | null;
@@ -81,7 +89,8 @@ type Action =
   | { type: "RESET_FORM" }
   | { type: "ADD_ASPIRANT_TO_QUESTION"; payload: { questionId: string } }
 | { type: "REMOVE_ASPIRANT_FROM_QUESTION"; payload: { questionId: string; index: number } }
-| { type: "UPDATE_ASPIRANT_IN_QUESTION"; payload: { questionId: string; index: number; field: keyof Aspirant; value: string | File | null } };
+| { type: "UPDATE_ASPIRANT_IN_QUESTION"; payload: { questionId: string; index: number; field: keyof Aspirant; value: string | File | null } }
+| { type: "UPDATE_RATING_SCALE"; payload: { id: string; scale: number } };
 
 
 // --- Reducer Function ---
@@ -197,6 +206,15 @@ const reducer = (state: State, action: Action): State => {
           return q;
         }) as PollQuestion[],
       };
+case "UPDATE_RATING_SCALE":
+  return {
+    ...state,
+    dynamicQuestions: state.dynamicQuestions.map((q) =>
+      q.id === action.payload.id
+        ? { ...q, scale: action.payload.scale }
+        : q
+    ),
+  };
 
     case "SET_MESSAGE":
       return { ...state, message: action.payload };
@@ -245,7 +263,7 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
   const generateUniqueId = () => Math.random().toString(36).substring(2, 9);
 
   const handleAddQuestion = (
-    type: "single-choice"|"multi-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice"
+    type: "single-choice"|"multi-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice" | "rating"
   ) => {
     let newQuestion: PollQuestion;
     const id = generateUniqueId();
@@ -264,7 +282,15 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
       questionText: "",
       options: [{ text: "" }],
     };
-  }    
+  }  else if (type === "rating") {
+  newQuestion = {
+    id,
+    type: "rating",
+    questionText: "",
+    scale: 10,
+  };
+}
+  
     
     else if (type === "open-ended") {
       newQuestion = { id, type: "open-ended", questionText: "" };
@@ -347,7 +373,15 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
           ?true
           :false,
         };
-      } else if (q.type === "yes-no-notsure") {
+      }else if (q.type === "rating") {
+  return {
+    id: q.id,
+    type: q.type,
+    questionText: q.questionText,
+    scale: q.scale,
+  };
+}
+ else if (q.type === "yes-no-notsure") {
         return {
           id: q.id,
           type: q.type,
@@ -604,6 +638,52 @@ const DynamicQuestionSection: React.FC<{
           </button>
         </div>
       ))}
+{question.type === "rating" && (
+  <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
+    <label className="block text-sm font-medium text-gray-700">
+      Rating Scale
+    </label>
+
+    {/* Choose scale buttons */}
+    <div className="flex gap-3">
+      {[3, 5, 7, 10].map((scaleOption) => (
+        <button
+          key={scaleOption}
+          type="button"
+          onClick={() =>
+            dispatch({
+              type: "UPDATE_RATING_SCALE",
+              payload: { id: question.id, scale: scaleOption },
+            })
+          }
+          className={`px-3 py-1 rounded-md border ${
+            question.scale === scaleOption
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-800 border-gray-300"
+          }`}
+        >
+          1–{scaleOption}
+        </button>
+      ))}
+    </div>
+    <div className="flex gap-4 mt-3">
+      {Array.from({ length: question.scale }, (_, i) => i + 1).map((num) => (
+        <label
+          key={num}
+          className="flex flex-col items-center text-sm font-medium text-gray-700"
+        >
+          <input
+            type="radio"
+            name={`rating-${question.id}`}
+            value={num}
+            className="w-5 h-5"
+                 />
+          <span className="mt-1">{num}</span>
+        </label>
+      ))}
+    </div>
+  </div>
+)}
 
 {question.type === "multi-choice" && (
   <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
@@ -664,75 +744,6 @@ const DynamicQuestionSection: React.FC<{
   </div>
 );
 
-const FixedQuestionBar: React.FC<{
-  handleAddQuestion: (type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice") => void;
-  submitting: boolean;
-}> = ({ handleAddQuestion, submitting }) => (
-  <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
-    <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div className="flex flex-wrap justify-center sm:justify-start gap-3 w-full sm:w-auto">
-        
-        <button
-  type="button"
-  onClick={() => handleAddQuestion("multi-choice")}
-  className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition transform hover:scale-105 text-sm"
->
-  <Radio className="w-4 h-4 mr-2" /> Multi Choice
-</button>
 
-        
-        <button
-          type="button"
-          onClick={() => handleAddQuestion("single-choice")}
-          className="flex items-center justify-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition transform hover:scale-105 text-sm"
-        >
-          <Radio className="w-4 h-4 mr-2" /> Single Choice
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAddQuestion("open-ended")}
-          className="flex items-center justify-center px-4 py-2 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 transition transform hover:scale-105 text-sm"
-        >
-          <Type className="w-4 h-4 mr-2" /> Open-Ended
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAddQuestion("yes-no-notsure")}
-          className="flex items-center justify-center px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition transform hover:scale-105 text-sm"
-        >
-          <HelpCircle className="w-4 h-4 mr-2" /> Yes/No/Not Sure
-        </button>
-        <button
-          type="button"
-          onClick={() => handleAddQuestion("competitor-choice")}
-          className="flex items-center justify-center px-4 py-2 bg-pink-600 text-white font-semibold rounded-lg shadow-md hover:bg-pink-700 transition transform hover:scale-105 text-sm"
-        >
-          <Users className="w-4 h-4 mr-2" /> Competitor Question
-        </button>
-      </div>
-
-      <button
-        type="submit"
-        disabled={submitting}
-        className={`flex items-center justify-center px-6 py-3 text-lg font-bold rounded-lg shadow-xl transition transform hover:scale-105 w-full sm:w-auto ${
-          submitting
-            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-            : "bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500"
-        }`}
-      >
-        {submitting ? (
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-            Submitting Poll...
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Send className="w-5 h-5 " /> Submit Survey
-          </div>
-        )}
-      </button>
-    </div>
-  </div>
-);
 
 export default CreateQuiz;
