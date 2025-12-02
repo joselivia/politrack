@@ -803,7 +803,7 @@ export const DynamicQuestionSection: React.FC<{
 {question.type === "rating" && (
   <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
     <label className="block text-sm font-medium text-gray-700 mb-2">
-      Rating Scale (1–10)
+      Rating Scale (1–5)
     </label>
 
  

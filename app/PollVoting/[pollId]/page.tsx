@@ -682,7 +682,7 @@ const SurveyResponsePage = () => {
                   )}
                   {q.type === "rating" && (
                     <div className="flex md:flex-row flex-wrap items-center gap-2">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
+                      {[1, 2, 3, 4, 5].map((option) => (
                         <label
                           key={option}
                           className="flex items-center gap-2 cursor-pointer px-3 py-1 border rounded-md hover:bg-gray-100 transition"
