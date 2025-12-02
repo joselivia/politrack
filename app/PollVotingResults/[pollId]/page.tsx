@@ -41,10 +41,11 @@ interface Option {
 
 interface Question {
   id: number;
-  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure";
+  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "rating";
   questionText: string;
   options?: Option[];
   isCompetitorQuestion?: boolean;
+  scale?: number;
 }
 
 interface locationData {
@@ -67,7 +68,7 @@ interface PollData {
 interface AggregatedResponse {
   questionId: number;
   questionText: string;
-  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure";
+  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "rating";
   isCompetitorQuestion?: boolean;
   totalResponses: number;
   choices?: {
@@ -78,6 +79,9 @@ interface AggregatedResponse {
   }[];
   openEndedResponses?: string[];
   totalSelections?: number;
+  scale?: number;
+  averageRating?: number;
+  ratingCount?: number;
 }
 
 interface DemographicsData {
@@ -490,8 +494,17 @@ const clone = el.cloneNode(true) as HTMLElement;
                   <h4 className="text-xl font-semibold text-gray-800 mb-4">
                     {index + 1}. {questionResult.questionText}
                   </h4>
+{questionResult.type === "rating" && (
+  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <p className="text-lg font-semibold text-blue-700">
+      Average Rating:{" "}
+      <span className="text-2xl font-bold">
+        {questionResult.averageRating ?? "N/A"}
+      </span>
+       </p>
+  </div>
+)}
 
-                  {/* Charts if present */}
                   {normalizedChoices && normalizedChoices.length > 0 && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
                       <div
@@ -568,17 +581,16 @@ const clone = el.cloneNode(true) as HTMLElement;
                       </ul>
                     </div>
                   ) : null}
+{!normalizedChoices?.length &&
+ !questionResult.openEndedResponses?.length &&
+ questionResult.type !== "rating" && (
+  <p className="text-gray-500 italic">No responses recorded yet.</p>
+)}
 
-                  {/* Fallback if nothing exists */}
-                  {!normalizedChoices?.length &&
-                    !questionResult.openEndedResponses?.length && (
-                      <p className="text-gray-500 italic">
-                        No responses recorded yet.
-                      </p>
-                    )}
                 </div>
               );
             })}
+            
           </div>
         ) : (
           <div className="mt-10 p-8 bg-[#eef2ff] rounded-xl shadow-md border border-indigo-200 text-center">
@@ -588,6 +600,7 @@ const clone = el.cloneNode(true) as HTMLElement;
             </p>
           </div>
         )}
+        
       </div>
     </div>
   );

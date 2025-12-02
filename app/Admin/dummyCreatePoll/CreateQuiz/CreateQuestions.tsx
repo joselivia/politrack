@@ -6,15 +6,12 @@ import {
   Plus,
   X,
   Upload,
-  Send,
   Megaphone,
-  Radio,
-  Type,
-  HelpCircle,
-  Users,
+
 } from "lucide-react";
 import { baseURL } from "@/config/baseUrl";
 import FixedQuestionBar from "./fixedbarButtons";
+import { scale } from "pdf-lib";
 interface Aspirant {
   name: string;
   party: string;
@@ -76,25 +73,49 @@ type State = {
 type Action =
   | { type: "SET_POLL_ID"; payload: string | null }
   | { type: "ADD_ASPIRANT" }
+  | { type: "LOAD_QUESTIONS"; payload: any[] }
   | { type: "REMOVE_ASPIRANT"; payload: number }
-  | { type: "UPDATE_ASPIRANT"; payload: { index: number; field: keyof Aspirant; value: string | File | null } }
+  | {
+      type: "UPDATE_ASPIRANT";
+      payload: {
+        index: number;
+        field: keyof Aspirant;
+        value: string | File | null;
+      };
+    }
   | { type: "ADD_QUESTION"; payload: PollQuestion }
   | { type: "REMOVE_QUESTION"; payload: string }
   | { type: "UPDATE_QUESTION_TEXT"; payload: { id: string; newText: string } }
   | { type: "ADD_OPTION"; payload: string }
-  | { type: "REMOVE_OPTION"; payload: { questionId: string; optionIndex: number } }
-  | { type: "UPDATE_OPTION"; payload: { questionId: string; optionIndex: number; newText: string } }
+  | {
+      type: "REMOVE_OPTION";
+      payload: { questionId: string; optionIndex: number };
+    }
+  | {
+      type: "UPDATE_OPTION";
+      payload: { questionId: string; optionIndex: number; newText: string };
+    }
   | { type: "SET_MESSAGE"; payload: string }
   | { type: "SET_SUBMITTING"; payload: boolean }
   | { type: "RESET_FORM" }
   | { type: "ADD_ASPIRANT_TO_QUESTION"; payload: { questionId: string } }
-| { type: "REMOVE_ASPIRANT_FROM_QUESTION"; payload: { questionId: string; index: number } }
-| { type: "UPDATE_ASPIRANT_IN_QUESTION"; payload: { questionId: string; index: number; field: keyof Aspirant; value: string | File | null } }
-| { type: "UPDATE_RATING_SCALE"; payload: { id: string; scale: number } };
-
+  | {
+      type: "REMOVE_ASPIRANT_FROM_QUESTION";
+      payload: { questionId: string; index: number };
+    }
+  | {
+      type: "UPDATE_ASPIRANT_IN_QUESTION";
+      payload: {
+        questionId: string;
+        index: number;
+        field: keyof Aspirant;
+        value: string | File | null;
+      };
+    }
+  | { type: "UPDATE_RATING_SCALE"; payload: { id: string; scale: number } };
 
 // --- Reducer Function ---
-const reducer = (state: State, action: Action): State => {
+export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "SET_POLL_ID":
       return { ...state, pollId: action.payload };
@@ -102,9 +123,31 @@ const reducer = (state: State, action: Action): State => {
     case "ADD_ASPIRANT":
       return {
         ...state,
-        mainAspirants: [...state.mainAspirants, { name: "", party: "", profileFile: null }],
+        mainAspirants: [
+          ...state.mainAspirants,
+          { name: "", party: "", profileFile: null },
+        ],
         message: "",
       };
+case "LOAD_QUESTIONS":
+  const mappedQuestions = action.payload.map((q: any) => {
+     const optionsMapped = q.options?.map((opt: any) => {
+      return { text: opt.optionText || opt.text || "" };
+    }) || [];
+
+    return {
+      id: String(q.id),
+      questionText: q.questionText,
+      type: q.type,
+      isCompetitorQuestion: !!q.isCompetitorQuestion,
+      options: optionsMapped,
+    };
+  });
+
+  return {
+    ...state,
+    dynamicQuestions: mappedQuestions,
+  };
 
     case "REMOVE_ASPIRANT":
       if (state.mainAspirants.length <= 1) {
@@ -120,19 +163,29 @@ const reducer = (state: State, action: Action): State => {
 
     case "UPDATE_ASPIRANT":
       const updatedAspirants = state.mainAspirants.map((asp, i) =>
-        i === action.payload.index ? { ...asp, [action.payload.field]: action.payload.value } : asp
+        i === action.payload.index
+          ? { ...asp, [action.payload.field]: action.payload.value }
+          : asp
       );
 
       // Also update competitor-choice questions
-      const updatedQuestionsForAspirantChange = state.dynamicQuestions.map(q => {
-        if (q.type === 'single-choice' && q.isCompetitorQuestion) {
-          const newOptions = updatedAspirants.map(asp => ({ text: asp.name }));
-          return { ...q, options: newOptions };
+      const updatedQuestionsForAspirantChange = state.dynamicQuestions.map(
+        (q) => {
+          if (q.type === "single-choice" && q.isCompetitorQuestion) {
+            const newOptions = updatedAspirants.map((asp) => ({
+              text: asp.name,
+            }));
+            return { ...q, options: newOptions };
+          }
+          return q;
         }
-        return q;
-      });
+      );
 
-      return { ...state, mainAspirants: updatedAspirants, dynamicQuestions: updatedQuestionsForAspirantChange };
+      return {
+        ...state,
+        mainAspirants: updatedAspirants,
+        dynamicQuestions: updatedQuestionsForAspirantChange,
+      };
 
     case "ADD_QUESTION":
       return {
@@ -153,7 +206,9 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         dynamicQuestions: state.dynamicQuestions.map((q) =>
-          q.id === action.payload.id ? { ...q, questionText: action.payload.newText } : q
+          q.id === action.payload.id
+            ? { ...q, questionText: action.payload.newText }
+            : q
         ),
       };
 
@@ -161,7 +216,12 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         dynamicQuestions: state.dynamicQuestions.map((q) => {
-          if ((q.id === action.payload && q.type === "single-choice" && !q.isCompetitorQuestion) || (q.id === action.payload && q.type === "multi-choice")) {
+          if (
+            (q.id === action.payload &&
+              q.type === "single-choice" &&
+              !q.isCompetitorQuestion) ||
+            (q.id === action.payload && q.type === "multi-choice")
+          ) {
             return {
               ...q,
               options: [...q.options, { text: "" }],
@@ -175,8 +235,12 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         dynamicQuestions: state.dynamicQuestions.map((q) => {
-          if ((q.id === action.payload.questionId && q.type === "single-choice" && !q.isCompetitorQuestion) ||
-        (q.id === action.payload.questionId && q.type === "multi-choice")) {
+          if (
+            (q.id === action.payload.questionId &&
+              q.type === "single-choice" &&
+              !q.isCompetitorQuestion) ||
+            (q.id === action.payload.questionId && q.type === "multi-choice")
+          ) {
             if (q.options.length <= 1) {
               return q;
             }
@@ -195,8 +259,12 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         dynamicQuestions: state.dynamicQuestions.map((q) => {
-          if ((q.id === action.payload.questionId && q.type === "single-choice" && !q.isCompetitorQuestion) ||
-        (q.id === action.payload.questionId && q.type === "multi-choice")) {
+          if (
+            (q.id === action.payload.questionId &&
+              q.type === "single-choice" &&
+              !q.isCompetitorQuestion) ||
+            (q.id === action.payload.questionId && q.type === "multi-choice")
+          ) {
             const updatedOptions = [...q.options];
             updatedOptions[action.payload.optionIndex] = {
               text: action.payload.newText,
@@ -206,15 +274,13 @@ const reducer = (state: State, action: Action): State => {
           return q;
         }) as PollQuestion[],
       };
-case "UPDATE_RATING_SCALE":
-  return {
-    ...state,
-    dynamicQuestions: state.dynamicQuestions.map((q) =>
-      q.id === action.payload.id
-        ? { ...q, scale: action.payload.scale }
-        : q
-    ),
-  };
+    case "UPDATE_RATING_SCALE":
+      return {
+        ...state,
+        dynamicQuestions: state.dynamicQuestions.map((q) =>
+          q.id === action.payload.id ? { ...q, scale: action.payload.scale } : q
+        ),
+      };
 
     case "SET_MESSAGE":
       return { ...state, message: action.payload };
@@ -235,7 +301,7 @@ case "UPDATE_RATING_SCALE":
   }
 };
 
-const initialState: State = {
+export const initialState: State = {
   pollId: null,
   mainAspirants: [{ name: "", party: "", profileFile: null }],
   dynamicQuestions: [],
@@ -246,16 +312,21 @@ const CreateQuiz = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [state, dispatch] = useReducer(reducer, initialState);
-const hasCompetitorQuestion = state.dynamicQuestions.some(
-  (q) => q.type === "single-choice" && (q as SingleChoiceQuestion).isCompetitorQuestion
-);
+  const hasCompetitorQuestion = state.dynamicQuestions.some(
+    (q) =>
+      q.type === "single-choice" &&
+      (q as SingleChoiceQuestion).isCompetitorQuestion
+  );
 
   useEffect(() => {
     const id = searchParams.get("pollId");
     if (id) {
       dispatch({ type: "SET_POLL_ID", payload: id });
     } else {
-      dispatch({ type: "SET_MESSAGE", payload: "❌ No poll ID provided. Redirecting..." });
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: "❌ No poll ID provided. Redirecting...",
+      });
       setTimeout(() => router.push("/Admin/create-poll"), 1500);
     }
   }, [searchParams, router]);
@@ -263,7 +334,14 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
   const generateUniqueId = () => Math.random().toString(36).substring(2, 9);
 
   const handleAddQuestion = (
-    type: "single-choice"|"multi-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice" | "rating"
+    type:
+      | "single-choice"
+      | "multi-choice"
+      | "open-ended"
+      | "yes-no-notsure"
+      | "competitor-choice"
+      | "rating",
+ scale?: number
   ) => {
     let newQuestion: PollQuestion;
     const id = generateUniqueId();
@@ -275,24 +353,21 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
         questionText: "",
         options: [{ text: "" }],
       };
-    }  else if (type === "multi-choice") {
-    newQuestion = {
-      id,
-      type: "multi-choice",
-      questionText: "",
-      options: [{ text: "" }],
-    };
-  }  else if (type === "rating") {
-  newQuestion = {
-    id,
-    type: "rating",
-    questionText: "",
-    scale: 10,
-  };
-}
-  
-    
-    else if (type === "open-ended") {
+    } else if (type === "multi-choice") {
+      newQuestion = {
+        id,
+        type: "multi-choice",
+        questionText: "",
+        options: [{ text: "" }],
+      };
+    } else if (type === "rating") {
+      newQuestion = {
+        id,
+        type: "rating",
+        questionText: "",
+        scale: scale || 10,
+      };
+    } else if (type === "open-ended") {
       newQuestion = { id, type: "open-ended", questionText: "" };
     } else if (type === "yes-no-notsure") {
       newQuestion = {
@@ -301,9 +376,7 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
         questionText: "",
         fixedOptions: ["Yes", "No", "Not Sure"],
       };
-    
-    }
-     else {
+    } else {
       newQuestion = {
         id,
         type: "single-choice",
@@ -327,15 +400,26 @@ const hasCompetitorQuestion = state.dynamicQuestions.some(
       return;
     }
 
-if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim())) {
-  dispatch({ type: "SET_MESSAGE", payload: "❌ Please fill in all aspirant names for competitor questions." });
-  dispatch({ type: "SET_SUBMITTING", payload: false });
-  return;
-}
+    if (
+      hasCompetitorQuestion &&
+      state.mainAspirants.some((comp) => !comp.name.trim())
+    ) {
+      dispatch({
+        type: "SET_MESSAGE",
+        payload:
+          "❌ Please fill in all aspirant names for competitor questions.",
+      });
+      dispatch({ type: "SET_SUBMITTING", payload: false });
+      return;
+    }
 
     const dynamicQuestionsValid = state.dynamicQuestions.every((q) => {
       if (!q.questionText.trim()) return false;
-      if (q.type === "single-choice" && !q.isCompetitorQuestion && q.options.some((opt) => !opt.text.trim()))
+      if (
+        q.type === "single-choice" &&
+        !q.isCompetitorQuestion &&
+        q.options.some((opt) => !opt.text.trim())
+      )
         return false;
       return true;
     });
@@ -353,7 +437,9 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
     formData.append("pollId", state.pollId);
     formData.append(
       "mainCompetitors",
-      JSON.stringify(state.mainAspirants.map(({ name, party }) => ({ name, party })))
+      JSON.stringify(
+        state.mainAspirants.map(({ name, party }) => ({ name, party }))
+      )
     );
 
     state.mainAspirants.forEach((aspirant, index) => {
@@ -369,19 +455,20 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
           type: q.type,
           questionText: q.questionText,
           options: q.options.map((opt) => opt.text),
-          isCompetitorQuestion:q.type==="single-choice" && (q as SingleChoiceQuestion).isCompetitorQuestion
-          ?true
-          :false,
+          isCompetitorQuestion:
+            q.type === "single-choice" &&
+            (q as SingleChoiceQuestion).isCompetitorQuestion
+              ? true
+              : false,
         };
-      }else if (q.type === "rating") {
-  return {
-    id: q.id,
-    type: q.type,
-    questionText: q.questionText,
-    scale: q.scale,
-  };
-}
- else if (q.type === "yes-no-notsure") {
+      } else if (q.type === "rating") {
+        return {
+          id: q.id,
+          type: q.type,
+          questionText: q.questionText,
+          scale: q.scale,
+        };
+      } else if (q.type === "yes-no-notsure") {
         return {
           id: q.id,
           type: q.type,
@@ -392,7 +479,10 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
       return q;
     });
 
-    formData.append("dynamicPollQuestions", JSON.stringify(dynamicQuestionsForBackend));
+    formData.append(
+      "dynamicPollQuestions",
+      JSON.stringify(dynamicQuestionsForBackend)
+    );
 
     try {
       const response = await fetch(`${baseURL}/api/polls/createQuiz`, {
@@ -402,18 +492,26 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
 
       if (response.ok) {
         const result = await response.json();
-        dispatch({ type: "SET_MESSAGE", payload: "✅ Poll questions and aspirants saved successfully!" });
+        dispatch({
+          type: "SET_MESSAGE",
+          payload: "✅ Poll questions and aspirants saved successfully!",
+        });
         setTimeout(() => router.push(`/Admin/OpinionResponse`), 1000);
       } else {
         const errorData = await response.json();
         dispatch({
           type: "SET_MESSAGE",
-          payload: `❌ Failed to save quiz data: ${errorData.message || response.statusText}`,
+          payload: `❌ Failed to save quiz data: ${
+            errorData.message || response.statusText
+          }`,
         });
       }
     } catch (error) {
       console.error("❌ Submission error:", error);
-      dispatch({ type: "SET_MESSAGE", payload: "❌ Network or server error. Please try again." });
+      dispatch({
+        type: "SET_MESSAGE",
+        payload: "❌ Network or server error. Please try again.",
+      });
     } finally {
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
@@ -431,16 +529,17 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
       <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex justify-center">
-  <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
-  Add Your Question of Choice
-</h2>
+        <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
+        Add Your Question of Choice
+      </h2>
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
-
         {state.message.includes("No poll ID provided") ? (
-          <p className="text-center mt-6 font-medium text-red-600">{state.message}</p>
+          <p className="text-center mt-6 font-medium text-red-600">
+            {state.message}
+          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 pb-28">
-    {state.dynamicQuestions.map((question, index) => (
+            {state.dynamicQuestions.map((question, index) => (
               <DynamicQuestionSection
                 key={question.id}
                 question={question}
@@ -448,12 +547,19 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
                 dispatch={dispatch}
                 mainAspirants={state.mainAspirants}
               />
-            ))}     
-    <FixedQuestionBar handleAddQuestion={handleAddQuestion} submitting={state.submitting} />
+            ))}
+            <FixedQuestionBar
+              handleAddQuestion={handleAddQuestion}
+              submitting={state.submitting}
+            />
           </form>
         )}
         {state.message && (
-          <p className={`text-center mt-6 font-medium ${state.message.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>
+          <p
+            className={`text-center mt-6 font-medium ${
+              state.message.startsWith("✅") ? "text-green-600" : "text-red-600"
+            }`}
+          >
             {state.message}
           </p>
         )}
@@ -462,35 +568,52 @@ if (hasCompetitorQuestion && state.mainAspirants.some((comp) => !comp.name.trim(
   );
 };
 
-const AspirantSection: React.FC<{
+export const AspirantSection: React.FC<{
   aspirants: Aspirant[];
   dispatch: React.Dispatch<Action>;
 }> = ({ aspirants, dispatch }) => (
   <div className="space-y-6">
-    <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">Aspirants for Main Poll</h3>
+    <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">
+      Aspirants for Main Poll
+    </h3>
     <div className="space-y-4">
       {aspirants.map((comp, index) => (
-        <div key={index} className="relative p-5 border border-gray-200 rounded-xl shadow-sm bg-gray-50">
+        <div
+          key={index}
+          className="relative p-5 border border-gray-200 rounded-xl shadow-sm bg-gray-50"
+        >
           {aspirants.length > 1 && (
             <button
               type="button"
-              onClick={() => dispatch({ type: "REMOVE_ASPIRANT", payload: index })}
+              onClick={() =>
+                dispatch({ type: "REMOVE_ASPIRANT", payload: index })
+              }
               className="absolute top-3 right-3 text-red-500 hover:text-red-700 transition-colors p-1 rounded-full bg-white shadow-sm"
               title="Remove aspirant"
             >
               <X className="w-5 h-5" />
             </button>
           )}
-          <h4 className="text-lg font-medium text-gray-700 mb-3">Aspirant {index + 1}</h4>
+          <h4 className="text-lg font-medium text-gray-700 mb-3">
+            Aspirant {index + 1}
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label htmlFor={`main-comp-name-${index}`} className="block text-xs font-medium text-gray-600 mb-1">Name <span className="text-red-500">*</span></label>
+              <label
+                htmlFor={`main-comp-name-${index}`}
+                className="block text-xs font-medium text-gray-600 mb-1"
+              >
+                Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 id={`main-comp-name-${index}`}
                 value={comp.name}
                 onChange={(e) =>
-                  dispatch({ type: "UPDATE_ASPIRANT", payload: { index, field: "name", value: e.target.value } })
+                  dispatch({
+                    type: "UPDATE_ASPIRANT",
+                    payload: { index, field: "name", value: e.target.value },
+                  })
                 }
                 placeholder="Aspirant Name"
                 className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
@@ -498,26 +621,39 @@ const AspirantSection: React.FC<{
               />
             </div>
             <div>
-              <label htmlFor={`main-comp-party-${index}`} className="block text-xs font-medium text-gray-600 mb-1">Party</label>
+              <label
+                htmlFor={`main-comp-party-${index}`}
+                className="block text-xs font-medium text-gray-600 mb-1"
+              >
+                Party
+              </label>
               <input
                 type="text"
                 id={`main-comp-party-${index}`}
                 value={comp.party}
                 onChange={(e) =>
-                  dispatch({ type: "UPDATE_ASPIRANT", payload: { index, field: "party", value: e.target.value } })
+                  dispatch({
+                    type: "UPDATE_ASPIRANT",
+                    payload: { index, field: "party", value: e.target.value },
+                  })
                 }
                 placeholder="Party Affiliation/Independent"
                 className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
               />
             </div>
             <div>
-              <label htmlFor={`main-profile-file-${index}`} className="block text-xs font-medium text-gray-600 mb-1">Profile Image</label>
+              <label
+                htmlFor={`main-profile-file-${index}`}
+                className="block text-xs font-medium text-gray-600 mb-1"
+              >
+                Profile Image
+              </label>
               <label
                 htmlFor={`main-profile-file-${index}`}
                 className="flex items-center justify-center w-full p-2 border rounded-md bg-white cursor-pointer hover:bg-gray-100 transition text-gray-700 text-sm"
               >
                 <Upload className="w-4 h-4 mr-2" />
-                {comp.profileFile ? comp.profileFile.name : 'Choose File'}
+                {comp.profileFile ? comp.profileFile.name : "Choose File"}
               </label>
               <input
                 type="file"
@@ -526,7 +662,11 @@ const AspirantSection: React.FC<{
                 onChange={(e) =>
                   dispatch({
                     type: "UPDATE_ASPIRANT",
-                    payload: { index, field: "profileFile", value: e.target.files ? e.target.files[0] : null },
+                    payload: {
+                      index,
+                      field: "profileFile",
+                      value: e.target.files ? e.target.files[0] : null,
+                    },
                   })
                 }
                 className="hidden"
@@ -548,7 +688,7 @@ const AspirantSection: React.FC<{
   </div>
 );
 
-const DynamicQuestionSection: React.FC<{
+export const DynamicQuestionSection: React.FC<{
   question: PollQuestion;
   index: number;
   dispatch: React.Dispatch<Action>;
@@ -557,7 +697,9 @@ const DynamicQuestionSection: React.FC<{
   <div className="relative p-6 border rounded-xl shadow-lg bg-white mb-6">
     <button
       type="button"
-      onClick={() => dispatch({ type: "REMOVE_QUESTION", payload: question.id })}
+      onClick={() =>
+        dispatch({ type: "REMOVE_QUESTION", payload: question.id })
+      }
       className="absolute top-4 right-4 text-red-500 hover:text-red-700 p-2 rounded-full bg-white shadow-sm"
       title="Remove question"
     >
@@ -566,13 +708,17 @@ const DynamicQuestionSection: React.FC<{
     <h4 className="text-lg font-bold text-gray-800 mb-4">
       {`Additional Question ${index + 1}: `}
       <span className="text-blue-600 capitalize">
-        {question.type === "single-choice" && (question as SingleChoiceQuestion).isCompetitorQuestion
+        {question.type === "single-choice" &&
+        (question as SingleChoiceQuestion).isCompetitorQuestion
           ? "Competitor Choice"
           : question.type.replace("-", " ")}
       </span>
     </h4>
     <div className="mb-4">
-      <label htmlFor={`dynamic-question-text-${question.id}`} className="block text-sm font-medium text-gray-700 mb-2">
+      <label
+        htmlFor={`dynamic-question-text-${question.id}`}
+        className="block text-sm font-medium text-gray-700 mb-2"
+      >
         Question Text <span className="text-red-500">*</span>
       </label>
       <input
@@ -580,24 +726,32 @@ const DynamicQuestionSection: React.FC<{
         id={`dynamic-question-text-${question.id}`}
         value={question.questionText}
         onChange={(e) =>
-          dispatch({ type: "UPDATE_QUESTION_TEXT", payload: { id: question.id, newText: e.target.value } })
+          dispatch({
+            type: "UPDATE_QUESTION_TEXT",
+            payload: { id: question.id, newText: e.target.value },
+          })
         }
         className="w-full p-3 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-800"
-        placeholder={`Enter your ${question.type.replace("-", " ")} question here`}
+        placeholder={`Enter your ${question.type.replace(
+          "-",
+          " "
+        )} question here`}
         required
       />
     </div>
 
     {question.type === "single-choice" &&
       ((question as SingleChoiceQuestion).isCompetitorQuestion ? (
-       <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
-            <AspirantSection aspirants={mainAspirants} dispatch={dispatch} />
-      </div>
-   
+        <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
+          <AspirantSection aspirants={mainAspirants} dispatch={dispatch} />
+        </div>
       ) : (
         <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
           {(question as SingleChoiceQuestion).options.map((option, oIndex) => (
-            <div key={oIndex} className="relative p-4 border rounded-lg bg-gray-50 shadow-sm">
+            <div
+              key={oIndex}
+              className="relative p-4 border rounded-lg bg-gray-50 shadow-sm"
+            >
               {(question as SingleChoiceQuestion).options.length > 1 && (
                 <button
                   type="button"
@@ -613,14 +767,20 @@ const DynamicQuestionSection: React.FC<{
                   <X className="w-4 h-4" />
                 </button>
               )}
-              <h6 className="text-sm font-medium text-gray-600 mb-2">Option {oIndex + 1}</h6>
+              <h6 className="text-sm font-medium text-gray-600 mb-2">
+                Option {oIndex + 1}
+              </h6>
               <input
                 type="text"
                 value={option.text}
                 onChange={(e) =>
                   dispatch({
                     type: "UPDATE_OPTION",
-                    payload: { questionId: question.id, optionIndex: oIndex, newText: e.target.value },
+                    payload: {
+                      questionId: question.id,
+                      optionIndex: oIndex,
+                      newText: e.target.value,
+                    },
                   })
                 }
                 placeholder="Enter option text"
@@ -631,7 +791,9 @@ const DynamicQuestionSection: React.FC<{
           ))}
           <button
             type="button"
-            onClick={() => dispatch({ type: "ADD_OPTION", payload: question.id })}
+            onClick={() =>
+              dispatch({ type: "ADD_OPTION", payload: question.id })
+            }
             className="flex items-center px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-md hover:bg-blue-600 transition"
           >
             <Plus className="w-4 h-4 mr-2" /> Add Option
@@ -640,110 +802,85 @@ const DynamicQuestionSection: React.FC<{
       ))}
 {question.type === "rating" && (
   <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
-    <label className="block text-sm font-medium text-gray-700">
-      Rating Scale
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Rating Scale (1–10)
     </label>
 
-    {/* Choose scale buttons */}
-    <div className="flex gap-3">
-      {[3, 5, 7, 10].map((scaleOption) => (
-        <button
-          key={scaleOption}
-          type="button"
-          onClick={() =>
-            dispatch({
-              type: "UPDATE_RATING_SCALE",
-              payload: { id: question.id, scale: scaleOption },
-            })
-          }
-          className={`px-3 py-1 rounded-md border ${
-            question.scale === scaleOption
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-800 border-gray-300"
-          }`}
-        >
-          1–{scaleOption}
-        </button>
-      ))}
-    </div>
-    <div className="flex gap-4 mt-3">
-      {Array.from({ length: question.scale }, (_, i) => i + 1).map((num) => (
-        <label
-          key={num}
-          className="flex flex-col items-center text-sm font-medium text-gray-700"
-        >
-          <input
-            type="radio"
-            name={`rating-${question.id}`}
-            value={num}
-            className="w-5 h-5"
-                 />
-          <span className="mt-1">{num}</span>
-        </label>
-      ))}
-    </div>
+ 
   </div>
 )}
 
-{question.type === "multi-choice" && (
-  <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
-    {(question as MultiChoiceQuestion).options.map((option, oIndex) => (
-      <div key={oIndex} className="relative p-4 border rounded-lg bg-gray-50 shadow-sm">
-        {(question as MultiChoiceQuestion).options.length > 1 && (
-          <button
-            type="button"
-            onClick={() =>
-              dispatch({
-                type: "REMOVE_OPTION",
-                payload: { questionId: question.id, optionIndex: oIndex },
-              })
-            }
-            className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1 rounded-full bg-white shadow-sm"
+
+    {question.type === "multi-choice" && (
+      <div className="space-y-4 border-t pt-4 mt-4 border-gray-100">
+        {(question as MultiChoiceQuestion).options.map((option, oIndex) => (
+          <div
+            key={oIndex}
+            className="relative p-4 border rounded-lg bg-gray-50 shadow-sm"
           >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-        <h6 className="text-sm font-medium text-gray-600 mb-2">Option {oIndex + 1}</h6>
-        <input
-          type="text"
-          value={option.text}
-          onChange={(e) =>
-            dispatch({
-              type: "UPDATE_OPTION",
-              payload: { questionId: question.id, optionIndex: oIndex, newText: e.target.value },
-            })
-          }
-          placeholder="Enter option text"
-          className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
-          required
-        />
+            {(question as MultiChoiceQuestion).options.length > 1 && (
+              <button
+                type="button"
+                onClick={() =>
+                  dispatch({
+                    type: "REMOVE_OPTION",
+                    payload: { questionId: question.id, optionIndex: oIndex },
+                  })
+                }
+                className="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1 rounded-full bg-white shadow-sm"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            <h6 className="text-sm font-medium text-gray-600 mb-2">
+              Option {oIndex + 1}
+            </h6>
+            <input
+              type="text"
+              value={option.text}
+              onChange={(e) =>
+                dispatch({
+                  type: "UPDATE_OPTION",
+                  payload: {
+                    questionId: question.id,
+                    optionIndex: oIndex,
+                    newText: e.target.value,
+                  },
+                })
+              }
+              placeholder="Enter option text"
+              className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
+              required
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => dispatch({ type: "ADD_OPTION", payload: question.id })}
+          className="flex items-center px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded-md hover:bg-green-600 transition"
+        >
+          <Plus className="w-4 h-4 mr-2" /> Add Option
+        </button>
       </div>
-    ))}
-    <button
-      type="button"
-      onClick={() => dispatch({ type: "ADD_OPTION", payload: question.id })}
-      className="flex items-center px-4 py-2 bg-green-500 text-white text-sm font-semibold rounded-md hover:bg-green-600 transition"
-    >
-      <Plus className="w-4 h-4 mr-2" /> Add Option
-    </button>
-  </div>
-)}
-
+    )}
 
     {question.type === "yes-no-notsure" && (
       <div className="space-y-3 border-t pt-4 mt-4 border-gray-100">
         <div className="flex flex-wrap gap-3">
-          {(question as YesNoNotSureQuestion).fixedOptions.map((optionText, oIndex) => (
-            <span key={oIndex} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md shadow-sm text-sm font-medium">
-              {optionText}
-            </span>
-          ))}
+          {((question as YesNoNotSureQuestion).fixedOptions || []).map(
+            (optionText, oIndex) => (
+              <span
+                key={oIndex}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md shadow-sm text-sm font-medium"
+              >
+                {optionText}
+              </span>
+            )
+          )}
         </div>
       </div>
     )}
   </div>
 );
-
-
 
 export default CreateQuiz;

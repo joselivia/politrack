@@ -68,12 +68,12 @@ const AllPollsPage = () => {
     }
   };
 
-  const handleEdit = (pollId: number) => {
-    setMenuOpenId(null);
-    alert("This feature is not available yet.");
-    //router.push(`/Admin/dummyCreatePoll/EditAspirants/${pollId}`);
-  };
+const handleEdit = (id: number) => {
+  setMenuOpenId(null);
+  alert("Coming Soon");
+//router.push(`/Admin/dummyCreatePoll/CreateQuiz/EditQuiz/${id}`);
 
+};
   useEffect(() => {
     const fetchAllPolls = async () => {
       try {

@@ -12,8 +12,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import { countyConstituencyMap, countyAssemblyWardMap } from "@/app/Admin/dummyCreatePoll/createpoll/Places";
-
+import {
+  countyConstituencyMap,
+  countyAssemblyWardMap,
+} from "@/app/Admin/dummyCreatePoll/createpoll/Places";
 
 interface Competitor {
   id: number;
@@ -29,10 +31,16 @@ interface Option {
 
 interface Question {
   id: number;
-  type: "single-choice"|"multi-choice" | "open-ended" | "yes-no-notsure";
+  type:
+    | "single-choice"
+    | "multi-choice"
+    | "open-ended"
+    | "yes-no-notsure"
+    | "rating";
   questionText: string;
   options?: Option[];
   isCompetitorQuestion?: boolean;
+  scale?: number;
 }
 
 interface PollData {
@@ -54,6 +62,7 @@ interface VoteResponse {
   selectedCompetitorIds?: number | null;
   selectedOptionIds?: number[] | null;
   openEndedResponse?: string | null;
+  rating?: number | null;
 }
 
 const SurveyResponsePage = () => {
@@ -68,20 +77,20 @@ const SurveyResponsePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const searchParams = useSearchParams();
-    const prefilledRegion = searchParams.get("region") || "";
+  const prefilledRegion = searchParams.get("region") || "";
   const prefilledCounty = searchParams.get("county") || "";
-    const [region, setRegion] = useState(prefilledRegion);
-    const [county, setCounty] = useState(prefilledCounty);
-      const [constituency, setConstituency] = useState("");
-      const [ward, setWard] = useState("");
-      const constituencies = county ? countyConstituencyMap[county] : [];
-      const wards = constituency ? countyAssemblyWardMap[constituency] : [];
+  const [region, setRegion] = useState(prefilledRegion);
+  const [county, setCounty] = useState(prefilledCounty);
+  const [constituency, setConstituency] = useState("");
+  const [ward, setWard] = useState("");
+  const constituencies = county ? countyConstituencyMap[county] : [];
+  const wards = constituency ? countyAssemblyWardMap[constituency] : [];
   const [selections, setSelections] = useState<{
-    [key: number]: number |number[] | string | null;
+    [key: number]: number | number[] | string | null;
   }>({});
   const [mainCompetitorSelection, setMainCompetitorSelection] = useState<
     number | null
@@ -133,18 +142,23 @@ const SurveyResponsePage = () => {
       [questionId]: value,
     }));
   };
-const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) => {
-  setSelections((prev) => {
-    const current = Array.isArray(prev[questionId]) ? (prev[questionId] as number[]) : [];
-    const updated = current.includes(optionId)
-      ? current.filter((id) => id !== optionId) 
-      : [...current, optionId]; 
-    return {
-      ...prev,
-      [questionId]: updated,
-    };
-  });
-};
+  const handleMultiChoiceSelectionChange = (
+    questionId: number,
+    optionId: number
+  ) => {
+    setSelections((prev) => {
+      const current = Array.isArray(prev[questionId])
+        ? (prev[questionId] as number[])
+        : [];
+      const updated = current.includes(optionId)
+        ? current.filter((id) => id !== optionId)
+        : [...current, optionId];
+      return {
+        ...prev,
+        [questionId]: updated,
+      };
+    });
+  };
 
   const handleSubmitVote = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +167,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
     setMessage(null);
     setError(null);
 
-     if (!pollData) {
+    if (!pollData) {
       setError("Poll data not loaded.");
       setSubmitting(false);
       return;
@@ -206,7 +220,10 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
           selectedOptionIds: null,
           openEndedResponse: null,
         });
-      } else if (q.type === "single-choice" || q.type === "yes-no-notsure") {
+      }
+ else if (
+        q.type === "single-choice" ||
+        q.type === "yes-no-notsure"  ) {
         if (
           typeof selection !== "number" ||
           !q.options?.some((opt) => opt.id === selection)
@@ -217,29 +234,44 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
         }
         responses.push({
           questionId: q.id,
-          selectedOptionIds: Array.isArray(selection) ? [selection] : [selection],
+          selectedOptionIds: [selection],
           selectedCompetitorIds: null,
           openEndedResponse: null,
         });
       }
-      else if (q.type === "multi-choice") {
-  const selectedArray = selections[q.id];
-  if (!Array.isArray(selectedArray) || selectedArray.length === 0) {
-    setError(`Please select at least one option for question: "${q.questionText}"`);
+      else if (q.type === "rating") {
+  if (typeof selection !== "number" || selection < 1 || selection > (q.scale || 10)) {
+    setError(`Please select a rating for question: "${q.questionText}"`);
     setSubmitting(false);
     return;
   }
-
-    responses.push({
-      questionId: q.id,
-      selectedOptionIds: selectedArray,
-      selectedCompetitorIds: null,
-      openEndedResponse: null,
-    });
-
-}
+  responses.push({
+    questionId: q.id,
+    selectedOptionIds: [selection],
+    selectedCompetitorIds: null,
+    openEndedResponse: null,
+    rating: selection,
+  });
+}   
       
-      else if (q.type === "open-ended") {
+      
+      else if (q.type === "multi-choice") {
+        const selectedArray = selections[q.id];
+        if (!Array.isArray(selectedArray) || selectedArray.length === 0) {
+          setError(
+            `Please select at least one option for question: "${q.questionText}"`
+          );
+          setSubmitting(false);
+          return;
+        }
+
+        responses.push({
+          questionId: q.id,
+          selectedOptionIds: selectedArray,
+          selectedCompetitorIds: null,
+          openEndedResponse: null,
+        });
+      } else if (q.type === "open-ended") {
         if (typeof selection !== "string" || selection.trim() === "") {
           setError(
             `Please provide an answer for question: "${q.questionText}"`
@@ -269,10 +301,10 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
           respondentName: respondentName.trim(),
           respondentAge: parseInt(respondentAge),
           respondentGender,
-            region,
-    county,
-    constituency,
-    ward,
+          region,
+          county,
+          constituency,
+          ward,
         }),
       });
 
@@ -283,8 +315,9 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
         setRespondentAge("");
         setSelections({});
         setMainCompetitorSelection(null);
-        if(!isAdmin){
-        setTimeout(() => router.replace('/Thankyou'), 1000); }
+        if (!isAdmin) {
+          setTimeout(() => router.replace("/Thankyou"), 1000);
+        }
       } else {
         const errorData = await response.json();
         setError(
@@ -343,17 +376,17 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
   );
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
-<button
-  onClick={() => router.back()}
-  className="inline-flex items-center gap-2 px-2 py-2 
+      <button
+        onClick={() => router.back()}
+        className="inline-flex items-center gap-2 px-2 py-2 
              rounded-xl bg-blue-400 border border-gray-200 
              font-medium shadow-sm 
              hover:bg-blue-500 mb-4
              transition-all duration-300"
->
-  <ArrowLeft className="w-4 h-4" />
-  Back
-</button>
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
 
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-3 sm:p-6 border border-gray-200">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-6 flex items-center">
@@ -394,40 +427,40 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
         )}
 
         <form onSubmit={handleSubmitVote} className="space-y-10">
-            {region !== "National" && (
-    <div className="flex gap-4">
-      <select
-        value={constituency}
-        onChange={(e) => {
-          setConstituency(e.target.value);
-          setWard("");
-        }}
-        disabled={!county}
-        className="w-full p-3 border border-gray-300 rounded-lg"
-      >
-        <option value="">Select Constituency</option>
-        {constituencies.map((cst) => (
-          <option key={cst} value={cst}>
-            {cst}
-          </option>
-        ))}
-      </select>
+          {region !== "National" && (
+            <div className="flex gap-4">
+              <select
+                value={constituency}
+                onChange={(e) => {
+                  setConstituency(e.target.value);
+                  setWard("");
+                }}
+                disabled={!county}
+                className="w-full p-3 border border-gray-300 rounded-lg"
+              >
+                <option value="">Select Constituency</option>
+                {constituencies.map((cst) => (
+                  <option key={cst} value={cst}>
+                    {cst}
+                  </option>
+                ))}
+              </select>
 
-      <select
-        value={ward}
-        onChange={(e) => setWard(e.target.value)}
-        disabled={!constituency}
-        className="w-full p-3 border border-gray-300 rounded-lg"
-      >
-        <option value="">Select Ward</option>
-        {wards.map((w) => (
-          <option key={w} value={w}>
-            {w}
-          </option>
-        ))}
-      </select>
-    </div>
-  )}
+              <select
+                value={ward}
+                onChange={(e) => setWard(e.target.value)}
+                disabled={!constituency}
+                className="w-full p-3 border border-gray-300 rounded-lg"
+              >
+                <option value="">Select Ward</option>
+                {wards.map((w) => (
+                  <option key={w} value={w}>
+                    {w}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">
             Respondent Details
           </h3>
@@ -437,7 +470,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Name: 
+                Name:
               </label>
               <input
                 type="text"
@@ -447,14 +480,14 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                 }
                 placeholder="Enter Name"
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                  />
+              />
             </div>
             <div>
               <label
                 htmlFor="respondent-gender"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Gender 
+                Gender
               </label>
               <select
                 id="respondent-gender"
@@ -463,7 +496,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                   setRespondentGender(e.target.value)
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                            >
+              >
                 <option value="" disabled>
                   Select Gender
                 </option>
@@ -478,7 +511,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                 htmlFor="respondent-age"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Age 
+                Age
               </label>
               <select
                 id="respondent-age"
@@ -487,7 +520,6 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                   setRespondentAge(e.target.value)
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-            
               >
                 <option value="" disabled>
                   Select Age
@@ -565,35 +597,46 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                 <HelpCircle className="w-7 h-7 mr-3 text-indigo-600" /> Other
                 Poll Questions
               </h3>
-              {otherQuestions.map((q,index) => (
+              {otherQuestions.map((q, index) => (
                 <div
                   key={q.id}
                   className="mb-8 p-5 bg-white rounded-lg shadow-sm border border-gray-200"
                 >
                   <p className="text-lg font-semibold text-gray-800 mb-4">
-                   <span>{ index+1}.</span> {q.questionText}{" "}
+                    <span>{index + 1}.</span> {q.questionText}{" "}
                   </p>
-{q.type === "multi-choice" && q.options && (
-  <div className="space-y-3">
-    {q.options.map((option) => {
-      const selectedOptions = Array.isArray(selections[q.id]) ? (selections[q.id] as number[]) : [];
-      return (
-        <label key={option.id} className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            name={`question-${q.id}`}
-            value={option.id}
-            checked={selectedOptions.includes(option.id)}
-            onChange={() => handleMultiChoiceSelectionChange(q.id, option.id)}
-            className="form-checkbox h-5 w-5 text-green-600"
-          />
-          <span className="ml-3 text-base text-gray-700">{option.optionText}</span>
-        </label>
-      );
-    })}
-  </div>
-)}
-
+                  {q.type === "multi-choice" && q.options && (
+                    <div className="space-y-3">
+                      {q.options.map((option) => {
+                        const selectedOptions = Array.isArray(selections[q.id])
+                          ? (selections[q.id] as number[])
+                          : [];
+                        return (
+                          <label
+                            key={option.id}
+                            className="flex items-center cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              name={`question-${q.id}`}
+                              value={option.id}
+                              checked={selectedOptions.includes(option.id)}
+                              onChange={() =>
+                                handleMultiChoiceSelectionChange(
+                                  q.id,
+                                  option.id
+                                )
+                              }
+                              className="form-checkbox h-5 w-5 text-green-600"
+                            />
+                            <span className="ml-3 text-base text-gray-700">
+                              {option.optionText}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                   {q.type === "single-choice" && q.options && (
                     <div className="flex flex-wrap gap-4">
                       {q.options.map((option) => (
@@ -621,7 +664,6 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                       ))}
                     </div>
                   )}
-
                   {q.type === "open-ended" && (
                     <div>
                       <textarea
@@ -638,7 +680,30 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
                       />
                     </div>
                   )}
-
+                  {q.type === "rating" && (
+                    <div className="flex md:flex-row flex-wrap items-center gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((option) => (
+                        <label
+                          key={option}
+                          className="flex items-center gap-2 cursor-pointer px-3 py-1 border rounded-md hover:bg-gray-100 transition"
+                        >
+                          <input
+                            type="radio"
+                            name={`question-${q.id}`}
+                            value={option}
+                            checked={selections[q.id] === option}
+                            onChange={() =>
+                              handleDynamicQuestionSelectionChange(q.id, option)
+                            }
+                            className="form-radio h-5 w-5 text-yellow-600"
+                          />
+                          <span className="ml-3 text-base text-gray-700">
+                            {option}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                   {q.type === "yes-no-notsure" && q.options && (
                     <div className="flex flex-wrap gap-4">
                       {q.options.map((option) => (
@@ -671,7 +736,7 @@ const handleMultiChoiceSelectionChange = (questionId: number, optionId: number) 
             </div>
           )}
 
-              <div className="flex justify-center mt-10">
+          <div className="flex justify-center mt-10">
             <button
               type="submit"
               disabled={submitting}
