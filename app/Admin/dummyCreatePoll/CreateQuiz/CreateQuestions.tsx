@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useReducer, useEffect } from "react";
+import React, { useReducer, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus,
   X,
   Upload,
   Megaphone,
+  Send,
 
 } from "lucide-react";
 import { baseURL } from "@/config/baseUrl";
 import FixedQuestionBar from "./fixedbarButtons";
-import { scale } from "pdf-lib";
-interface Aspirant {
+import { handleAddQuestion as addQuestionUtil, handleAddQuestion } from "./handlebutton";
+export interface Aspirant {
   name: string;
   party: string;
   profileFile: File | null;
@@ -55,7 +56,7 @@ interface MultiChoiceQuestion {
   options: GenericOption[];
 }
 
-type PollQuestion =
+export type PollQuestion =
   | SingleChoiceQuestion
   | OpenEndedQuestion
   | YesNoNotSureQuestion
@@ -70,7 +71,7 @@ type State = {
   submitting: boolean;
 };
 
-type Action =
+export type Action =
   | { type: "SET_POLL_ID"; payload: string | null }
   | { type: "ADD_ASPIRANT" }
   | { type: "LOAD_QUESTIONS"; payload: any[] }
@@ -308,6 +309,7 @@ export const initialState: State = {
   message: "",
   submitting: false,
 };
+
 const CreateQuiz = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -331,63 +333,7 @@ const CreateQuiz = () => {
     }
   }, [searchParams, router]);
 
-  const generateUniqueId = () => Math.random().toString(36).substring(2, 9);
-
-  const handleAddQuestion = (
-    type:
-      | "single-choice"
-      | "multi-choice"
-      | "open-ended"
-      | "yes-no-notsure"
-      | "competitor-choice"
-      | "rating",
- scale?: number
-  ) => {
-    let newQuestion: PollQuestion;
-    const id = generateUniqueId();
-
-    if (type === "single-choice") {
-      newQuestion = {
-        id,
-        type: "single-choice",
-        questionText: "",
-        options: [{ text: "" }],
-      };
-    } else if (type === "multi-choice") {
-      newQuestion = {
-        id,
-        type: "multi-choice",
-        questionText: "",
-        options: [{ text: "" }],
-      };
-    } else if (type === "rating") {
-      newQuestion = {
-        id,
-        type: "rating",
-        questionText: "",
-        scale: scale || 10,
-      };
-    } else if (type === "open-ended") {
-      newQuestion = { id, type: "open-ended", questionText: "" };
-    } else if (type === "yes-no-notsure") {
-      newQuestion = {
-        id,
-        type: "yes-no-notsure",
-        questionText: "",
-        fixedOptions: ["Yes", "No", "Not Sure"],
-      };
-    } else {
-      newQuestion = {
-        id,
-        type: "single-choice",
-        questionText: "",
-        options: state.mainAspirants.map((comp) => ({ text: comp.name })),
-        isCompetitorQuestion: true,
-      };
-    }
-    dispatch({ type: "ADD_QUESTION", payload: newQuestion });
-  };
-
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch({ type: "SET_SUBMITTING", payload: true });
@@ -525,6 +471,37 @@ const CreateQuiz = () => {
       </div>
     );
   }
+  
+const isFormValid = () => {
+  // Check if there are questions
+  if (state.dynamicQuestions.length === 0) return false;
+
+  // Check all questions have text
+  for (const q of state.dynamicQuestions) {
+    if (!q.questionText.trim()) return false;
+
+    if (
+      (q.type === "single-choice" || q.type === "multi-choice") &&
+      !(q as SingleChoiceQuestion).isCompetitorQuestion &&
+      q.options.some((opt) => !opt.text.trim())
+    ) {
+      return false;
+    }
+  }
+
+  // Check all competitor names are filled if needed
+  const hasCompetitorQuestion = state.dynamicQuestions.some(
+    (q) =>
+      q.type === "single-choice" &&
+      (q as SingleChoiceQuestion).isCompetitorQuestion
+  );
+
+  if (hasCompetitorQuestion && state.mainAspirants.some((asp) => !asp.name.trim())) {
+    return false;
+  }
+
+  return true;
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
@@ -538,22 +515,48 @@ const CreateQuiz = () => {
             {state.message}
           </p>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 pb-28">
-            {state.dynamicQuestions.map((question, index) => (
-              <DynamicQuestionSection
-                key={question.id}
-                question={question}
-                index={index}
-                dispatch={dispatch}
-                mainAspirants={state.mainAspirants}
-              />
-            ))}
-            <FixedQuestionBar
-              handleAddQuestion={handleAddQuestion}
-              submitting={state.submitting}
-            />
-          </form>
+   <form onSubmit={handleSubmit} className="space-y-6 pb-28">
+  {state.dynamicQuestions.map((question, index) => (
+    <DynamicQuestionSection
+      key={question.id}
+      question={question}
+      index={index}
+      dispatch={dispatch}
+      mainAspirants={state.mainAspirants}
+    />
+  ))}
+
+  <div className="flex justify-center items-center bottom-0">
+    <button
+      type="submit"
+      disabled={state.submitting || !isFormValid()}
+      className={`flex items-center justify-center px-6 py-3 text-lg font-bold rounded-lg shadow-xl transition transform hover:scale-105 w-full sm:w-auto ${
+        state.submitting
+          ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+          : "bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500"
+      }`}
+    >
+      {state.submitting ? (
+        <div className="flex items-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          Submitting Poll...
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Send className="w-5 h-5 " /> Submit Survey
+        </div>
+      )}
+    </button>
+  </div>
+</form>
+
         )}
+
+           
+        <FixedQuestionBar
+  handleAddQuestion={(type) => handleAddQuestion(type, dispatch, state.mainAspirants)}
+  submitting={state.submitting}
+/>
         {state.message && (
           <p
             className={`text-center mt-6 font-medium ${

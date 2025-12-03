@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
 import { Megaphone, Loader2 } from "lucide-react";
 import { DynamicQuestionSection, initialState, reducer } from "../../CreateQuestions";
+import FixedQuestionBar from "../../fixedbarButtons";
+import { handleAddQuestion } from "../../handlebutton";
 
 interface BackendOption {
   id: number;
@@ -132,6 +134,10 @@ export default function EditQuizPage({ params }: { params: Promise<{ id: string 
           ))}
 
           <div className="flex justify-center mt-6">
+<FixedQuestionBar
+  handleAddQuestion={(type) => handleAddQuestion(type, dispatch, state.mainAspirants)}
+  submitting={state.submitting}
+/>
             <button
               type="submit"
               disabled={state.submitting}

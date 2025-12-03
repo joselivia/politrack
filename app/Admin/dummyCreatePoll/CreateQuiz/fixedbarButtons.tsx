@@ -1,9 +1,9 @@
-import { HelpCircle, Radio, Send, Type, Users } from "lucide-react";
+import { HelpCircle, Radio, Type, Users } from "lucide-react";
 
 const FixedQuestionBar: React.FC<{
   handleAddQuestion: (type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "competitor-choice" | "rating") => void;
   submitting: boolean;
-}> = ({ handleAddQuestion, submitting }) => (
+}> = ({ handleAddQuestion}) => (
   <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
     <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
       <div className="flex flex-wrap justify-center sm:justify-start gap-3 w-full sm:w-auto">
@@ -55,26 +55,7 @@ const FixedQuestionBar: React.FC<{
 
       </div>
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className={`flex items-center justify-center px-6 py-3 text-lg font-bold rounded-lg shadow-xl transition transform hover:scale-105 w-full sm:w-auto ${
-          submitting
-            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-            : "bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500"
-        }`}
-      >
-        {submitting ? (
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-            Submitting Poll...
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Send className="w-5 h-5 " /> Submit Survey
-          </div>
-        )}
-      </button>
+ 
     </div>
   </div>
 );

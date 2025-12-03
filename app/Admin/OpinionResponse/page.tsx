@@ -70,8 +70,8 @@ const AllPollsPage = () => {
 
 const handleEdit = (id: number) => {
   setMenuOpenId(null);
-  alert("Coming Soon");
-//router.push(`/Admin/dummyCreatePoll/CreateQuiz/EditQuiz/${id}`);
+  //alert("Coming Soon");
+router.push(`/Admin/dummyCreatePoll/CreateQuiz/EditQuiz/${id}`);
 
 };
   useEffect(() => {
