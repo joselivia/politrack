@@ -16,6 +16,7 @@ import {
   countyConstituencyMap,
   countyAssemblyWardMap,
 } from "@/app/Admin/dummyCreatePoll/createpoll/Places";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 interface Competitor {
   id: number;
@@ -36,7 +37,8 @@ interface Question {
     | "multi-choice"
     | "open-ended"
     | "yes-no-notsure"
-    | "rating";
+    | "rating"
+    | "ranking";
   questionText: string;
   options?: Option[];
   isCompetitorQuestion?: boolean;
@@ -95,6 +97,8 @@ const SurveyResponsePage = () => {
   const [mainCompetitorSelection, setMainCompetitorSelection] = useState<
     number | null
   >(null);
+
+  
   const ageOptions: number[] = Array.from({ length: 83 }, (_, i) => i + 18);
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
@@ -132,6 +136,20 @@ const SurveyResponsePage = () => {
 
     fetchPollData();
   }, [pollId]);
+
+const [rankingSelections, setRankingSelections] = useState<{
+  [key: number]: Option[];
+}>({});
+useEffect(() => {
+  if (!pollData) return;
+  const rankingInit: { [key: number]: Option[] } = {};
+  pollData.questions.forEach((q) => {
+    if (q.type === "ranking" && q.options) {
+      rankingInit[q.id] = [...q.options];
+    }
+  });
+  setRankingSelections(rankingInit);
+}, [pollData]);
 
   const handleDynamicQuestionSelectionChange = (
     questionId: number,
@@ -238,7 +256,21 @@ const SurveyResponsePage = () => {
           selectedCompetitorIds: null,
           openEndedResponse: null,
         });
-      }
+      }else if (q.type === "ranking") {
+  const rankedOptions = rankingSelections[q.id];
+  if (!rankedOptions || rankedOptions.length === 0) {
+    setError(`Please rank the options for question: "${q.questionText}"`);
+    setSubmitting(false);
+    return;
+  }
+  responses.push({
+    questionId: q.id,
+    selectedOptionIds: rankedOptions.map(opt => opt.id),
+    selectedCompetitorIds: null,
+    openEndedResponse: null,
+  });
+}
+
       else if (q.type === "rating") {
   if (typeof selection !== "number" || selection < 1 || selection > (q.scale || 10)) {
     setError(`Please select a rating for question: "${q.questionText}"`);
@@ -314,6 +346,7 @@ const SurveyResponsePage = () => {
         setRespondentGender("");
         setRespondentAge("");
         setSelections({});
+        setRankingSelections({});
         setMainCompetitorSelection(null);
         if (!isAdmin) {
           setTimeout(() => router.replace("/Thankyou"), 1000);
@@ -731,6 +764,59 @@ const SurveyResponsePage = () => {
                       ))}
                     </div>
                   )}
+{q.type === "ranking" && rankingSelections[q.id]?.length > 0 && (
+  <div className="mb-4">
+    <DragDropContext
+      onDragEnd={(result) => {
+        const { source, destination } = result;
+        if (!destination) return;
+
+        const items = Array.from(rankingSelections[q.id]);
+        const [movedItem] = items.splice(source.index, 1);
+        items.splice(destination.index, 0, movedItem);
+
+        setRankingSelections((prev) => ({
+          ...prev,
+          [q.id]: items,
+        }));
+      }}
+    >
+      <Droppable droppableId={`ranking-${q.id}`}>
+        {(provided) => (
+          <ul
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className="space-y-2"
+          >
+            {rankingSelections[q.id].map((option, index) => (
+              <Draggable
+                key={option.id.toString()}  // MUST be string & unique
+                draggableId={`ranking-${q.id}-${option.id}`} // unique across context
+                index={index}
+              >
+                {(provided, snapshot) => (
+                  <li
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className={`p-3 border rounded-md flex justify-between items-center cursor-move shadow-sm ${
+                      snapshot.isDragging ? "bg-blue-100" : "bg-white"
+                    }`}
+                  >
+                    <span>{option.optionText}</span>
+                    <span className="font-semibold">{index + 1}</span>
+                  </li>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </ul>
+        )}
+      </Droppable>
+    </DragDropContext>
+  </div>
+)}
+
                 </div>
               ))}
             </div>

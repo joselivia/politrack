@@ -2,10 +2,11 @@
 import React, { useReducer, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
-import { Megaphone, Loader2 } from "lucide-react";
-import { DynamicQuestionSection, initialState, reducer } from "../../CreateQuestions";
+import { Megaphone, Loader2, ArrowLeft } from "lucide-react";
+import {  initialState, reducer } from "../../CreateQuestions";
 import FixedQuestionBar from "../../fixedbarButtons";
 import { handleAddQuestion } from "../../handlebutton";
+import { DynamicQuestionSection } from "../../DynamicQuestions";
 
 interface BackendOption {
   id: number;
@@ -117,11 +118,22 @@ export default function EditQuizPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+       <div></div>  <button
+        onClick={() => router.back()}
+        className="inline-flex items-center gap-2 px-2 py-2 
+             rounded-xl bg-blue-400 border border-gray-200 
+             font-medium shadow-sm 
+             hover:bg-blue-500 mb-4
+             transition-all duration-300"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
       <h2 className="text-3xl font-bold mb-6 flex justify-center">
         <Megaphone className="mr-3 text-blue-600" /> Edit Poll Questions
       </h2>
 
-      <div className="max-w-5xl mx-auto bg-white p-6 shadow-xl rounded-xl">
+      <div className="bg-white p-6 shadow-xl rounded-xl">
         <form onSubmit={handleSubmit} className="space-y-6 pb-24">
           {state.dynamicQuestions.map((question, index) => (
             <DynamicQuestionSection

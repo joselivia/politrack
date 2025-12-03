@@ -9,7 +9,8 @@ export const handleAddQuestion = (
     | "open-ended"
     | "yes-no-notsure"
     | "competitor-choice"
-    | "rating",
+    | "rating"
+    |"ranking",
   dispatch: React.Dispatch<Action>,
   mainAspirants: Aspirant[],
   scale?: number
@@ -27,7 +28,14 @@ export const handleAddQuestion = (
     newQuestion = { id, type: "open-ended", questionText: "" };
   } else if (type === "yes-no-notsure") {
     newQuestion = { id, type: "yes-no-notsure", questionText: "", fixedOptions: ["Yes", "No", "Not Sure"] };
-  } else {
+  }else if (type === "ranking") {
+    newQuestion = {
+      id,
+      type: "ranking",
+      questionText: "",
+      options: [{ text: "" }], 
+    };
+  }  else {
     newQuestion = {
       id,
       type: "single-choice",
