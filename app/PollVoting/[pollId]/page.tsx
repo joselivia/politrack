@@ -64,7 +64,7 @@ interface VoteResponse {
   selectedCompetitorIds?: number | null;
   selectedOptionIds?: number[] | null;
   openEndedResponse?: string | null;
-  rating?: number | null;
+  type?: "ranking" |"rating";
 }
 
 const SurveyResponsePage = () => {
@@ -268,6 +268,7 @@ useEffect(() => {
     selectedOptionIds: rankedOptions.map(opt => opt.id),
     selectedCompetitorIds: null,
     openEndedResponse: null,
+    type: "ranking" as const,
   });
 }
 
@@ -282,7 +283,7 @@ useEffect(() => {
     selectedOptionIds: [selection],
     selectedCompetitorIds: null,
     openEndedResponse: null,
-    rating: selection,
+    type: "rating" as const,
   });
 }   
       
@@ -339,14 +340,23 @@ useEffect(() => {
           ward,
         }),
       });
-
+const resetRankingToOriginal = () => {
+  if (!pollData) return;
+  const reset: { [key: number]: Option[] } = {};
+  pollData.questions.forEach((q) => {
+    if (q.type === "ranking" && q.options) {
+      reset[q.id] = [...q.options];
+    }
+  });
+  setRankingSelections(reset);
+};
       if (response.ok) {
         setMessage("✅ Your vote has been submitted successfully!");
         setRespondentName("");
         setRespondentGender("");
         setRespondentAge("");
         setSelections({});
-        setRankingSelections({});
+   resetRankingToOriginal();
         setMainCompetitorSelection(null);
         if (!isAdmin) {
           setTimeout(() => router.replace("/Thankyou"), 1000);
@@ -816,7 +826,6 @@ useEffect(() => {
     </DragDropContext>
   </div>
 )}
-
                 </div>
               ))}
             </div>

@@ -41,7 +41,7 @@ interface Option {
 
 interface Question {
   id: number;
-  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "rating";
+  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "rating" | "ranking";
   questionText: string;
   options?: Option[];
   isCompetitorQuestion?: boolean;
@@ -64,11 +64,20 @@ interface PollData {
   competitors: Competitor[];
   questions: Question[];
 }
+interface RankingOption {
+  id: number;
+  label: string;
+  count: number;
+}
 
+interface RankingPosition {
+  position: number;
+  options: RankingOption[];
+}
 interface AggregatedResponse {
   questionId: number;
   questionText: string;
-  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "rating";
+  type: "single-choice" | "multi-choice" | "open-ended" | "yes-no-notsure" | "rating" | "ranking";
   isCompetitorQuestion?: boolean;
   totalResponses: number;
   choices?: {
@@ -82,6 +91,7 @@ interface AggregatedResponse {
   scale?: number;
   averageRating?: number;
   ratingCount?: number;
+  rankingData?:RankingPosition[];
 }
 
 interface DemographicsData {
@@ -468,138 +478,165 @@ const clone = el.cloneNode(true) as HTMLElement;
         )}
 
         {/* Question Results */}
-        {Array.isArray(aggregatedResponses) &&
-        aggregatedResponses.length > 0 ? (
-          <div className="space-y-10">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Scale className="w-7 h-7 mr-3 text-gray-600" /> Question-wise
-              Results
-            </h3>
-            {aggregatedResponses.map((questionResult, index) => {
-              const normalizedChoices = questionResult.choices
-                ?.map((c) => ({
-                  ...c,
-                  label:
-                    c.label.length > 15
-                      ? c.label.slice(0, 15) + "..."
-                      : c.label,
-                }))
-                .sort((a, b) => b.percentage - a.percentage);
+{Array.isArray(aggregatedResponses) && aggregatedResponses.length > 0 ? (
+  <div className="space-y-10">
+    <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+      <Scale className="w-7 h-7 mr-3 text-gray-600" /> Question-wise Results
+    </h3>
 
-              return (
-                <div
-                  key={questionResult.questionId}
-                  className="bg-white p-6 rounded-xl shadow-md border border-gray-200 break-inside-avoid"
-                >
-                  <h4 className="text-xl font-semibold text-gray-800 mb-4">
-                    {index + 1}. {questionResult.questionText}
-                  </h4>
-{questionResult.type === "rating" && (
-  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-    <p className="text-lg font-semibold text-blue-700">
-      Average Rating:{" "}
-      <span className="text-2xl font-bold">
-        {questionResult.averageRating ?? "N/A"}
-      </span>
-       </p>
+    {aggregatedResponses.map((questionResult, index) => {
+      const normalizedChoices = questionResult.choices
+        ?.map((c) => ({
+          ...c,
+          label: c.label.length > 15 ? c.label.slice(0, 15) + "..." : c.label,
+        }))
+        .sort((a, b) => b.percentage - a.percentage);
+
+      return (
+        <div
+          key={questionResult.questionId}
+          className="bg-white p-6 rounded-xl shadow-md border border-gray-200 break-inside-avoid"
+        >
+          <h4 className="text-xl font-semibold text-gray-800 mb-4">
+            {index + 1}. {questionResult.questionText}
+          </h4>
+
+          {/* RATING DISPLAY */}
+          {questionResult.type === "rating" && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-lg font-semibold text-blue-700">
+                Average Rating:{" "}
+                <span className="text-2xl font-bold">
+                  {questionResult.averageRating?.toFixed(2) ?? "N/A"}
+                </span>
+              </p>
+            </div>
+          )}
+
+          {/* === RANKING QUESTION – NEW BEAUTIFUL DISPLAY === */}
+          {questionResult.type === "ranking" && questionResult.rankingData ? (
+            <div className="mt-6">
+              <h5 className="text-2xl font-bold text-gray-800 mb-6">
+                Ranking Results (First Preference Leaderboard)
+              </h5>
+
+              {questionResult.rankingData.map((rankGroup) => {
+                const isFirst = rankGroup.position === 1;
+                const topOption = rankGroup.options[0];
+
+                return (
+                  <div
+                    key={rankGroup.position}
+                    className={`mb-6 p-5 rounded-xl border-2 ${
+                      isFirst
+                        ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-400 shadow-xl"
+                        : "bg-gray-50 border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h6 className={`text-lg font-bold ${isFirst ? "text-amber-700" : "text-gray-700"}`}>
+                        {rankGroup.position === 1 && "1st Choice"}
+                        {rankGroup.position === 2 && "2nd Choice"}
+                        {rankGroup.position === 3 && "3rd Choice"}
+                        {rankGroup.position > 3 && `${rankGroup.position}th Choice`}
+                      </h6>
+                      {isFirst && topOption && (
+                        <div className="text-3xl font-extrabold text-amber-600">
+                          {topOption.label}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      {rankGroup.options.map((opt, idx) => (
+                        <div
+                          key={opt.id}
+                          className={`flex justify-between items-center p-4 rounded-lg font-medium ${
+                            idx === 0 && isFirst
+                              ? "bg-white border-2 border-amber-400 shadow-lg text-amber-800"
+                              : "bg-white/80 border border-gray-200"
+                          }`}
+                        >
+                          <span>
+                            {idx + 1}. {opt.label}
+                          </span>
+                          <span className={`text-lg font-bold ${isFirst ? "text-amber-600" : "text-blue-600"}`}>
+                            {opt.count} {opt.count === 1 ? "vote" : "votes"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : questionResult.type !== "ranking" && normalizedChoices && normalizedChoices.length > 0 ? (
+        
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+              <div className="chart-wrapper" style={{ width: "100%", height: 400 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={normalizedChoices}
+                      dataKey="count"
+                      nameKey="label"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={120}
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                    >
+                      {normalizedChoices.map((_, i) => (
+                        <Cell key={`pie-${i}`} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="chart-wrapper" style={{ width: "100%", height: 400 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsBarChart data={normalizedChoices}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="label" angle={-25} textAnchor="end" interval={0} height={120} />
+                    <YAxis />
+                    <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
+                    <Bar dataKey="percentage" maxBarSize={50}>
+                      {normalizedChoices.map((_, i) => (
+                        <Cell key={`bar-${i}`} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : null}
+
+          {/* OPEN-ENDED RESPONSES */}
+          {questionResult.openEndedResponses?.length ? (
+            <div className="mt-6 p-5 bg-gray-50 rounded-lg border border-gray-300 max-h-80 overflow-y-auto">
+              <h5 className="font-bold text-gray-700 mb-3">Open-Ended Responses:</h5>
+              <ul className="list-disc pl-6 space-y-2 text-gray-700">
+                {questionResult.openEndedResponses.map((resp, i) => (
+                  <li key={i}>{resp}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      );
+    })}
+  </div>
+) : (
+  <div className="mt-10 p-8 bg-[#eef2ff] rounded-xl shadow-md border border-indigo-200 text-center">
+    <MessageSquareText className="w-16 h-16 mx-auto mb-4 text-indigo-500" />
+    <p className="text-xl text-indigo-700">
+      No responses have been recorded for this poll yet.
+    </p>
   </div>
 )}
-
-                  {normalizedChoices && normalizedChoices.length > 0 && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
-                      <div
-                        className="chart-wrapper"
-                        style={{ width: "100%", height: 400 }}
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={normalizedChoices}
-                              dataKey="count"
-                              nameKey="label"
-                              cx="50%"
-                              cy="50%"
-                              outerRadius={120}
-                              labelLine={false}
-                              label={renderCustomizedLabel}
-                            >
-                              {normalizedChoices.map((_, i) => (
-                                <Cell
-                                  key={`pie-${i}`}
-                                  fill={COLORS[i % COLORS.length]}
-                                />
-                              ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-
-                      <div
-                        className="chart-wrapper"
-                        style={{ width: "100%", height: 400 }}
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RechartsBarChart data={normalizedChoices}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis
-                              dataKey="label"
-                              angle={-25}
-                              textAnchor="end"
-                              interval={0}
-                              height={120}
-                            />
-                            <YAxis />
-                            <Tooltip
-                              formatter={(v: number) => `${v.toFixed(1)}%`}
-                            />
-                            <Bar dataKey="percentage" maxBarSize={30}>
-                              {normalizedChoices.map((_, i) => (
-                                <Cell
-                                  key={`bar-${i}`}
-                                  fill={COLORS[i % COLORS.length]}
-                                />
-                              ))}
-                            </Bar>
-                          </RechartsBarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Open-ended responses if present */}
-                  {questionResult.openEndedResponses?.length ? (
-                    <div className="p-5 rounded-lg max-h-80 overflow-y-auto">
-                      <h5 className="font-semibold text-gray-700 mb-3">
-                        Open-Ended Responses:
-                      </h5>
-                      <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                        {questionResult.openEndedResponses.map((resp, i) => (
-                          <li key={i}>{resp}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-{!normalizedChoices?.length &&
- !questionResult.openEndedResponses?.length &&
- questionResult.type !== "rating" && (
-  <p className="text-gray-500 italic">No responses recorded yet.</p>
-)}
-
-                </div>
-              );
-            })}
-            
-          </div>
-        ) : (
-          <div className="mt-10 p-8 bg-[#eef2ff] rounded-xl shadow-md border border-indigo-200 text-center">
-            <MessageSquareText className="w-16 h-16 mx-auto mb-4 text-indigo-500" />
-            <p className="text-xl text-indigo-700">
-              No responses have been recorded for this poll yet.
-            </p>
-          </div>
-        )}
         
       </div>
     </div>
