@@ -83,9 +83,15 @@ export default function EditQuizPage({ params }: { params: Promise<{ id: string 
     e.preventDefault();
     dispatch({ type: "SET_SUBMITTING", payload: true });
 
+    // Ensure question IDs are numeric for backend comparison
+    const questionsWithNumericIds = state.dynamicQuestions.map(q => ({
+      ...q,
+      id: q.id ? (typeof q.id === 'string' ? parseInt(q.id, 10) : q.id) : undefined
+    }));
+
     const formData = new FormData();
     formData.append("pollId", pollId!);
-    formData.append("PollQuestions", JSON.stringify(state.dynamicQuestions));
+    formData.append("PollQuestions", JSON.stringify(questionsWithNumericIds));
 
     try {
       const res = await fetch(`${baseURL}/api/polls/updateQuiz/${pollId}`, {

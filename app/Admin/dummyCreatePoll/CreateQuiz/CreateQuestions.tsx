@@ -24,14 +24,14 @@ interface GenericOption {
   text: string;
 }
 export interface RatingQuestion {
-  id: string;
+  id: string | number;
   type: "rating";
   questionText: string;
   scale: number;
 }
 
 export interface SingleChoiceQuestion {
-  id: string;
+  id: string | number;
   type: "single-choice";
   questionText: string;
   options: GenericOption[];
@@ -39,25 +39,25 @@ export interface SingleChoiceQuestion {
 }
 
 export interface OpenEndedQuestion {
-  id: string;
+  id: string | number;
   type: "open-ended";
   questionText: string;
 }
 
 export interface YesNoNotSureQuestion {
-  id: string;
+  id: string | number;
   type: "yes-no-notsure";
   questionText: string;
   fixedOptions: string[];
 }
 export interface MultiChoiceQuestion {
-  id: string;
+  id: string | number;
   type: "multi-choice";
   questionText: string;
   options: GenericOption[];
 }
 export interface RankingQuestion {
-  id: string;
+  id: string | number;
   type: "ranking";
   questionText: string;
   options: { id?: number; text: string }[];
@@ -142,15 +142,21 @@ export const reducer = (state: State, action: Action): State => {
 case "LOAD_QUESTIONS":
   const mappedQuestions = action.payload.map((q: any) => {
      const optionsMapped = q.options?.map((opt: any) => {
-      return { text: opt.optionText || opt.text || "" };
+      return { 
+        id: opt.id,
+        text: opt.optionText || opt.text || "" 
+      };
     }) || [];
 
+    // Keep ID as number for proper backend comparison
     return {
-      id: String(q.id),
+      id: q.id,
       questionText: q.questionText,
       type: q.type,
       isCompetitorQuestion: !!q.isCompetitorQuestion,
       options: optionsMapped,
+      scale: q.type === 'rating' ? (optionsMapped[0]?.text ? parseInt(optionsMapped[0].text) : 5) : undefined,
+      fixedOptions: q.type === 'yes-no-notsure' ? optionsMapped.map((o: any) => o.text) : undefined
     };
   });
 
@@ -407,9 +413,12 @@ const CreateQuiz = () => {
     });
 
     const dynamicQuestionsForBackend = state.dynamicQuestions.map((q) => {
+      // Parse ID as number if it exists and is a string
+      const numericId = q.id ? (typeof q.id === 'string' ? parseInt(q.id, 10) : q.id) : undefined;
+      
       if (q.type === "single-choice" || q.type === "multi-choice") {
         return {
-          id: q.id,
+          id: numericId,
           type: q.type,
           questionText: q.questionText,
           options: q.options.map((opt) => opt.text),
@@ -421,20 +430,27 @@ const CreateQuiz = () => {
         };
       } else if (q.type === "rating") {
         return {
-          id: q.id,
+          id: numericId,
           type: q.type,
           questionText: q.questionText,
           scale: q.scale,
         };
       } else if (q.type === "yes-no-notsure") {
         return {
-          id: q.id,
+          id: numericId,
           type: q.type,
           questionText: q.questionText,
           options: q.fixedOptions,
         };
+      } else if (q.type === "ranking") {
+        return {
+          id: numericId,
+          type: q.type,
+          questionText: q.questionText,
+          options: q.options.map((opt) => opt.text),
+        };
       }
-      return q;
+      return { ...q, id: numericId };
     });
 
     formData.append(
