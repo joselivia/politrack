@@ -64,6 +64,7 @@ interface VoteResponse {
   selectedCompetitorIds?: number | null;
   selectedOptionIds?: number[] | null;
   openEndedResponse?: string | null;
+  rating?: number | null;
   type?: "ranking" |"rating";
 }
 
@@ -273,18 +274,18 @@ useEffect(() => {
 }
 
       else if (q.type === "rating") {
-  if (typeof selection !== "number" || selection < 1 || selection > (q.scale || 10)) {
+  if (typeof selection !== "number" || selection < 1 || selection > (q.scale || 5)) {
     setError(`Please select a rating for question: "${q.questionText}"`);
     setSubmitting(false);
     return;
   }
   responses.push({
     questionId: q.id,
-    selectedOptionIds: [selection],
+    rating: selection, 
+    selectedOptionIds: null,
     selectedCompetitorIds: null,
     openEndedResponse: null,
-    type: "rating" as const,
-  });
+  });;
 }   
       
       
