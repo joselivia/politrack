@@ -505,7 +505,7 @@ const clone = el.cloneNode(true) as HTMLElement;
           {questionResult.type === "rating" && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-lg font-semibold text-blue-700">
-                Average Rating:{" "}
+                Average Rating:
                 <span className="text-2xl font-bold">
                   {questionResult.averageRating?.toFixed(2) ?? "N/A"}
                 </span>
