@@ -4,6 +4,10 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Save, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { baseURL } from "@/config/baseUrl";
+import {
+  countyConstituencyMap,
+  countyAssemblyWardMap,
+} from "@/app/Admin/dummyCreatePoll/createpoll/Places";
 
 interface Competitor {
   id: number;
@@ -53,6 +57,8 @@ interface BulkResponseData {
     openEndedResponses?: string[];
     ratingValues?: number[];
     rankingCounts?: { [optionId: number]: { [rank: string]: number } };
+    genderCounts?: { [gender: string]: number };
+    ageRangeCounts?: { [range: string]: number };
   };
 }
 
@@ -67,8 +73,22 @@ const AdminBulkResponsePage = () => {
   const [saving, setSaving] = useState<{ [key: number]: boolean }>({});
   const [successMessage, setSuccessMessage] = useState<{ [key: number]: string }>({});
 
+  // Location filters
+  const [constituency, setConstituency] = useState("");
+  const [ward, setWard] = useState("");
+
   // Store bulk response data per question
   const [bulkData, setBulkData] = useState<BulkResponseData>({});
+
+  // Store demographics data (separate from questions, applies to entire response set)
+  const [demographics, setDemographics] = useState<{
+    genderCounts: { [gender: string]: number };
+    ageRangeCounts: { [range: string]: number };
+  }>({ genderCounts: {}, ageRangeCounts: {} });
+
+  // Derive constituencies and wards from poll data
+  const constituencies = pollData?.county ? countyConstituencyMap[pollData.county] : [];
+  const wards = constituency ? countyAssemblyWardMap[constituency] : [];
 
   useEffect(() => {
     if (!pollId) {
@@ -86,25 +106,6 @@ const AdminBulkResponsePage = () => {
         }
         const data: PollData = await pollResponse.json();
         setPollData(data);
-
-        // Fetch existing admin bulk responses
-        const bulkResponse = await fetch(
-          `${baseURL}/api/Opinions/${pollId}/admin-bulk-responses`
-        );
-        if (bulkResponse.ok) {
-          const existingData = await bulkResponse.json();
-          const formattedData: BulkResponseData = {};
-          existingData.forEach((item: any) => {
-            formattedData[item.question_id] = {
-              optionCounts: item.option_counts || {},
-              competitorCounts: item.competitor_counts || {},
-              openEndedResponses: item.open_ended_responses || [],
-              ratingValues: item.rating_values || [],
-              rankingCounts: item.ranking_counts || {},
-            };
-          });
-          setBulkData(formattedData);
-        }
       } catch (err: any) {
         setError(err.message || "An unknown error occurred.");
       } finally {
@@ -114,6 +115,57 @@ const AdminBulkResponsePage = () => {
 
     fetchPollData();
   }, [pollId]);
+
+  // Fetch bulk responses when constituency or ward changes
+  useEffect(() => {
+    if (!pollId) return;
+
+    const fetchBulkResponses = async () => {
+      try {
+        const query = new URLSearchParams();
+        if (constituency) query.append("constituency", constituency);
+        if (ward) query.append("ward", ward);
+
+        const bulkResponse = await fetch(
+          `${baseURL}/api/Opinions/${pollId}/admin-bulk-responses?${query.toString()}`
+        );
+        if (bulkResponse.ok) {
+          const existingData = await bulkResponse.json();
+          const formattedData: BulkResponseData = {};
+          let loadedDemographics = { genderCounts: {}, ageRangeCounts: {} };
+          
+          existingData.forEach((item: any, index: number) => {
+            formattedData[item.question_id] = {
+              optionCounts: item.option_counts || {},
+              competitorCounts: item.competitor_counts || {},
+              openEndedResponses: item.open_ended_responses || [],
+              ratingValues: item.rating_values || [],
+              rankingCounts: item.ranking_counts || {},
+            };
+            
+            // Load demographics from first record (they're the same across all questions for a location)
+            if (index === 0) {
+              loadedDemographics = {
+                genderCounts: item.gender_counts || {},
+                ageRangeCounts: item.age_range_counts || {},
+              };
+            }
+          });
+          
+          setBulkData(formattedData);
+          setDemographics(loadedDemographics);
+        } else {
+          // No data for this location yet, clear the form
+          setBulkData({});
+          setDemographics({ genderCounts: {}, ageRangeCounts: {} });
+        }
+      } catch (err: any) {
+        console.error("Error fetching bulk responses:", err);
+      }
+    };
+
+    fetchBulkResponses();
+  }, [pollId, constituency, ward]);
 
   const handleSaveQuestion = async (question: Question) => {
     setSaving((prev) => ({ ...prev, [question.id]: true }));
@@ -135,6 +187,10 @@ const AdminBulkResponsePage = () => {
             openEndedResponses: questionData.openEndedResponses || [],
             ratingValues: questionData.ratingValues || [],
             rankingCounts: questionData.rankingCounts || {},
+            genderCounts: demographics.genderCounts || {},
+            ageRangeCounts: demographics.ageRangeCounts || {},
+            constituency: constituency || null,
+            ward: ward || null,
           }),
         }
       );
@@ -222,10 +278,154 @@ const AdminBulkResponsePage = () => {
         <h2 className="text-2xl font-semibold text-blue-700 mb-6">
           Poll: {pollData.title}
         </h2>
-        <p className="text-lg text-gray-600 mb-8">
+        <p className="text-lg text-gray-600 mb-4">
           Enter bulk responses for each question. Data is saved per question and can be
           updated at any time.
         </p>
+
+        {/* Location Filters */}
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            Select Location (Optional)
+          </h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Filter bulk responses by constituency and/or ward. Leave empty for general poll-wide data.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Constituency
+              </label>
+              <select
+                value={constituency}
+                onChange={(e) => {
+                  setConstituency(e.target.value);
+                  setWard(""); // Reset ward when constituency changes
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 bg-white"
+              >
+                <option value="">All Constituencies</option>
+                {constituencies.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ward
+              </label>
+              <select
+                value={ward}
+                onChange={(e) => setWard(e.target.value)}
+                disabled={!constituency}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 ${
+                  !constituency ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+                }`}
+              >
+                <option value="">All Wards</option>
+                {wards.map((w) => (
+                  <option key={w} value={w}>
+                    {w}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {(constituency || ward) && (
+            <div className="mt-3 p-2 bg-white rounded border border-blue-300">
+              <p className="text-sm text-blue-800">
+                <strong>Currently entering data for:</strong>{" "}
+                {constituency || "All constituencies"}
+                {ward && ` → ${ward}`}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Demographics Section */}
+        <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            Demographics (Optional)
+          </h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Enter demographic data for all respondents in this bulk entry. This data applies to the entire response set for the selected location.
+          </p>
+
+          {/* Gender Counts */}
+          <div className="mb-6">
+            <h4 className="text-md font-medium text-gray-700 mb-3">Gender Distribution</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {["Male", "Female", "Other"].map((gender) => (
+                <div key={gender}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {gender}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={demographics.genderCounts[gender] || 0}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      setDemographics((prev) => ({
+                        ...prev,
+                        genderCounts: {
+                          ...prev.genderCounts,
+                          [gender]: value,
+                        },
+                      }));
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 bg-white"
+                    placeholder="0"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Age Range Counts */}
+          <div>
+            <h4 className="text-md font-medium text-gray-700 mb-3">Age Range Distribution</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {["18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75+"].map((range) => (
+                <div key={range}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {range}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={demographics.ageRangeCounts[range] || 0}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      setDemographics((prev) => ({
+                        ...prev,
+                        ageRangeCounts: {
+                          ...prev.ageRangeCounts,
+                          [range]: value,
+                        },
+                      }));
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 bg-white"
+                    placeholder="0"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 p-3 bg-white rounded border border-green-300">
+            <p className="text-sm text-green-800">
+              <strong>Total respondents:</strong>{" "}
+              {Math.max(
+                Object.values(demographics.genderCounts).reduce((sum, count) => sum + count, 0),
+                Object.values(demographics.ageRangeCounts).reduce((sum, count) => sum + count, 0)
+              )}
+            </p>
+          </div>
+        </div>
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
