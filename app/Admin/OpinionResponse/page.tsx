@@ -161,13 +161,20 @@ router.push(`/Admin/dummyCreatePoll/CreateQuiz/EditQuiz/${id}`);
                     </button>
 
                     {menuOpenId === poll.id && (
-                      <div className="absolute top-10 right-3 w-40 bg-white rounded-lg shadow-lg flex flex-col p-2 z-50 border">
+                      <div className="absolute top-10 right-3 w-48 bg-white rounded-lg shadow-lg flex flex-col p-2 z-50 border">
                         <button
                           onClick={() => handleEdit(poll.id)}
                           className="flex items-center gap-2 px-3 py-2 text-sm text-gray-800 hover:bg-gray-200 rounded text-left"
                         >
                           <PencilLine className="w-4 h-4 text-blue-600" /> Edit
                         </button>
+                        <Link
+                          href={`/Admin/BulkResponse/${poll.id}`}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-800 hover:bg-gray-200 rounded text-left"
+                          onClick={() => setMenuOpenId(null)}
+                        >
+                          <List className="w-4 h-4 text-green-600" /> Bulk Response
+                        </Link>
                         <button
                           onClick={() => handleDelete(poll.id)}
                           disabled={deletingId === poll.id}

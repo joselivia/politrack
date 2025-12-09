@@ -49,7 +49,7 @@ export default function EditQuizPage({ params }: { params: Promise<{ id: string 
           Array.isArray(q.options) && (q.type !== "open-ended")
             ? q.options.map((opt) => ({
                 id: String(opt.id),
-                optionText: opt.optionText || "",
+                text: opt.optionText || "",
               }))
             : [];
 
@@ -83,11 +83,26 @@ export default function EditQuizPage({ params }: { params: Promise<{ id: string 
     e.preventDefault();
     dispatch({ type: "SET_SUBMITTING", payload: true });
 
-    // Ensure question IDs are numeric for backend comparison
-    const questionsWithNumericIds = state.dynamicQuestions.map(q => ({
-      ...q,
-      id: q.id ? (typeof q.id === 'string' ? parseInt(q.id, 10) : q.id) : undefined
-    }));
+    // Ensure question IDs and option IDs are numeric for backend comparison
+    const questionsWithNumericIds = state.dynamicQuestions.map(q => {
+      const baseQuestion = {
+        ...q,
+        id: q.id ? (typeof q.id === 'string' ? parseInt(q.id, 10) : q.id) : undefined
+      };
+
+      // Convert option IDs to numbers if they exist
+      if ('options' in q && Array.isArray(q.options)) {
+        return {
+          ...baseQuestion,
+          options: q.options.map(opt => ({
+            ...opt,
+            id: opt.id ? (typeof opt.id === 'string' ? parseInt(opt.id, 10) : opt.id) : undefined
+          }))
+        };
+      }
+
+      return baseQuestion;
+    });
 
     const formData = new FormData();
     formData.append("pollId", pollId!);

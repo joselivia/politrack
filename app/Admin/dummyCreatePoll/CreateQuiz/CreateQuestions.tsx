@@ -21,6 +21,7 @@ export interface Aspirant {
 }
 
 interface GenericOption {
+  id?: string | number;
   text: string;
 }
 export interface RatingQuestion {
@@ -285,7 +286,9 @@ case "LOAD_QUESTIONS":
             (q.id === action.payload.questionId && q.type === "ranking")
           ) {
             const updatedOptions = [...q.options];
+            const existingOption = updatedOptions[action.payload.optionIndex];
             updatedOptions[action.payload.optionIndex] = {
+              ...existingOption,
               text: action.payload.newText,
             };
             return { ...q, options: updatedOptions };
