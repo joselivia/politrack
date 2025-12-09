@@ -95,35 +95,35 @@ export type Action =
       };
     }
   | { type: "ADD_QUESTION"; payload: PollQuestion }
-  | { type: "REMOVE_QUESTION"; payload: string }
-  | { type: "UPDATE_QUESTION_TEXT"; payload: { id: string; newText: string } }
-  | { type: "ADD_OPTION"; payload: string }
+  | { type: "REMOVE_QUESTION"; payload: string | number }
+  | { type: "UPDATE_QUESTION_TEXT"; payload: { id: string | number; newText: string } }
+  | { type: "ADD_OPTION"; payload: string | number }
   | {
       type: "REMOVE_OPTION";
-      payload: { questionId: string; optionIndex: number };
+      payload: { questionId: string | number; optionIndex: number };
     }
   | {
       type: "UPDATE_OPTION";
-      payload: { questionId: string; optionIndex: number; newText: string };
+      payload: { questionId: string | number; optionIndex: number; newText: string };
     }
   | { type: "SET_MESSAGE"; payload: string }
   | { type: "SET_SUBMITTING"; payload: boolean }
   | { type: "RESET_FORM" }
-  | { type: "ADD_ASPIRANT_TO_QUESTION"; payload: { questionId: string } }
+  | { type: "ADD_ASPIRANT_TO_QUESTION"; payload: { questionId: string | number } }
   | {
       type: "REMOVE_ASPIRANT_FROM_QUESTION";
-      payload: { questionId: string; index: number };
+      payload: { questionId: string | number; index: number };
     }
   | {
       type: "UPDATE_ASPIRANT_IN_QUESTION";
       payload: {
-        questionId: string;
+        questionId: string | number;
         index: number;
         field: keyof Aspirant;
         value: string | File | null;
       };
     }
-  | { type: "UPDATE_RATING_SCALE"; payload: { id: string; scale: number } };
+  | { type: "UPDATE_RATING_SCALE"; payload: { id: string | number; scale: number } };
 
 // --- Reducer Function ---
 export const reducer = (state: State, action: Action): State => {
