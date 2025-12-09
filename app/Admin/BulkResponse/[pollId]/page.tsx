@@ -72,6 +72,8 @@ const AdminBulkResponsePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<{ [key: number]: boolean }>({});
   const [successMessage, setSuccessMessage] = useState<{ [key: number]: string }>({});
+  const [savingDemographics, setSavingDemographics] = useState(false);
+  const [demographicsMessage, setDemographicsMessage] = useState("");
 
   // Location filters
   const [constituency, setConstituency] = useState("");
@@ -132,9 +134,8 @@ const AdminBulkResponsePage = () => {
         if (bulkResponse.ok) {
           const existingData = await bulkResponse.json();
           const formattedData: BulkResponseData = {};
-          let loadedDemographics = { genderCounts: {}, ageRangeCounts: {} };
           
-          existingData.forEach((item: any, index: number) => {
+          existingData.forEach((item: any) => {
             formattedData[item.question_id] = {
               optionCounts: item.option_counts || {},
               competitorCounts: item.competitor_counts || {},
@@ -142,21 +143,29 @@ const AdminBulkResponsePage = () => {
               ratingValues: item.rating_values || [],
               rankingCounts: item.ranking_counts || {},
             };
-            
-            // Load demographics from first record (they're the same across all questions for a location)
-            if (index === 0) {
-              loadedDemographics = {
-                genderCounts: item.gender_counts || {},
-                ageRangeCounts: item.age_range_counts || {},
-              };
-            }
           });
           
           setBulkData(formattedData);
-          setDemographics(loadedDemographics);
         } else {
           // No data for this location yet, clear the form
           setBulkData({});
+        }
+
+        // Fetch demographics separately
+        const demographicsResponse = await fetch(
+          `${baseURL}/api/Opinions/${pollId}/admin-demographics?${query.toString()}`
+        );
+        if (demographicsResponse.ok) {
+          const demographicsData = await demographicsResponse.json();
+          if (demographicsData) {
+            setDemographics({
+              genderCounts: demographicsData.gender_counts || {},
+              ageRangeCounts: demographicsData.age_range_counts || {},
+            });
+          } else {
+            setDemographics({ genderCounts: {}, ageRangeCounts: {} });
+          }
+        } else {
           setDemographics({ genderCounts: {}, ageRangeCounts: {} });
         }
       } catch (err: any) {
@@ -166,6 +175,42 @@ const AdminBulkResponsePage = () => {
 
     fetchBulkResponses();
   }, [pollId, constituency, ward]);
+
+  const handleSaveDemographics = async () => {
+    setSavingDemographics(true);
+    setDemographicsMessage("");
+    setError(null);
+
+    try {
+      // Save demographics to separate endpoint
+      const response = await fetch(
+        `${baseURL}/api/Opinions/${pollId}/admin-demographics`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            genderCounts: demographics.genderCounts || {},
+            ageRangeCounts: demographics.ageRangeCounts || {},
+            constituency: constituency || null,
+            ward: ward || null,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save demographics.");
+      }
+
+      setDemographicsMessage("✅ Demographics saved successfully!");
+      setTimeout(() => {
+        setDemographicsMessage("");
+      }, 3000);
+    } catch (err: any) {
+      setError(err.message || "Failed to save demographics.");
+    } finally {
+      setSavingDemographics(false);
+    }
+  };
 
   const handleSaveQuestion = async (question: Question) => {
     setSaving((prev) => ({ ...prev, [question.id]: true }));
@@ -187,8 +232,6 @@ const AdminBulkResponsePage = () => {
             openEndedResponses: questionData.openEndedResponses || [],
             ratingValues: questionData.ratingValues || [],
             rankingCounts: questionData.rankingCounts || {},
-            genderCounts: demographics.genderCounts || {},
-            ageRangeCounts: demographics.ageRangeCounts || {},
             constituency: constituency || null,
             ward: ward || null,
           }),
@@ -347,12 +390,44 @@ const AdminBulkResponsePage = () => {
 
         {/* Demographics Section */}
         <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">
-            Demographics (Optional)
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Enter demographic data for all respondents in this bulk entry. This data applies to the entire response set for the selected location.
-          </p>
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Demographics (Optional)
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Enter demographic data for all respondents in this bulk entry. This data applies to the entire response set for the selected location.
+              </p>
+            </div>
+            <button
+              onClick={handleSaveDemographics}
+              disabled={savingDemographics}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                savingDemographics
+                  ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+            >
+              {savingDemographics ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save
+                </>
+              )}
+            </button>
+          </div>
+
+          {demographicsMessage && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded flex items-center gap-2">
+              <CheckCircle className="w-5 h-5" />
+              {demographicsMessage}
+            </div>
+          )}
 
           {/* Gender Counts */}
           <div className="mb-6">
