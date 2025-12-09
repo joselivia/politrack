@@ -233,6 +233,18 @@ el.style.maxHeight = 'none';
 
 const clone = el.cloneNode(true) as HTMLElement;
 
+ // Remove all borders and shadows for cleaner PDF
+ clone.style.border = 'none';
+ clone.style.boxShadow = 'none';
+
+ // Remove borders and shadows from all child elements
+ const allElements = clone.querySelectorAll('*');
+ allElements.forEach((elem) => {
+   const htmlElem = elem as HTMLElement;
+   htmlElem.style.border = 'none';
+   htmlElem.style.boxShadow = 'none';
+   htmlElem.style.outline = 'none';
+ });
 
  const openEndedContainers = clone.querySelectorAll('.max-h-80.overflow-y-auto');
 
@@ -244,22 +256,39 @@ const clone = el.cloneNode(true) as HTMLElement;
         div.classList.remove('max-h-80', 'overflow-y-auto');
       });
 
-      const offscreen = document.createElement('div');
-      offscreen.style.position = 'fixed';
-      offscreen.style.top = '-9999px';
-      offscreen.style.left = '-9999px';
-      offscreen.appendChild(clone);
-      document.body.appendChild(offscreen);
+      const offscreen = document.createElement('div');
+      offscreen.style.position = 'fixed';
+      offscreen.style.top = '-9999px';
+      offscreen.style.left = '-9999px';
+      offscreen.style.width = '1200px'; // Fixed width for consistent layout
+      offscreen.style.backgroundColor = 'white';
+      offscreen.appendChild(clone);
+      document.body.appendChild(offscreen);
 
-      const pngData = await domtoimage.toPng(clone, { quality: 1 });
-      const pngBytes = await (await fetch(pngData)).arrayBuffer();
-      const img = await pdf.embedPng(pngBytes);
-      const { width, height } = img.scale(1);
+      const pngData = await domtoimage.toPng(clone, { 
+        quality: 1,
+        bgcolor: 'white',
+        style: {
+          border: 'none',
+          boxShadow: 'none'
+        }
+      });
+      const pngBytes = await (await fetch(pngData)).arrayBuffer();
+      const img = await pdf.embedPng(pngBytes);
+      
+      // Scale image to fit A4 page width (595 points)
+      const maxWidth = 595;
+      const scale = Math.min(1, maxWidth / img.width);
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
 
-      const page = pdf.addPage([width, height]);
-      page.drawImage(img, { x: 0, y: 0, width, height });
-
-      document.body.removeChild(offscreen);
+      const page = pdf.addPage([scaledWidth + 40, scaledHeight + 40]); // Add padding
+      page.drawImage(img, { 
+        x: 20, 
+        y: 20, 
+        width: scaledWidth, 
+        height: scaledHeight 
+      });      document.body.removeChild(offscreen);
 
       el.style.maxHeight = originalMaxHeight;
       el.style.overflow = originalOverflow;
@@ -348,7 +377,7 @@ const clone = el.cloneNode(true) as HTMLElement;
 
       </div>
 
-      <div className="export-section shadow-xl rounded-2xl p-3 sm:p-4">
+      <div className="export-section bg-white shadow-xl rounded-2xl p-6 sm:p-8">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-6 flex items-center">
           <BarChart className="mr-3 text-blue-600 w-10 h-10" />
           Poll Results: {poll.title}
@@ -411,7 +440,7 @@ const clone = el.cloneNode(true) as HTMLElement;
 
         {/* Demographics */}
         {demographics && demographics.totalRespondents > 0 ? (
-          <div className="mb-10 p-6 bg-[#f9fafb] rounded-xl shadow-md border border-gray-200 break-inside-avoid">
+          <div className="mb-10 p-6 bg-[#f9fafb] rounded-xl break-inside-avoid">
             <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
               <Users className="w-7 h-7 mr-3 text-gray-600" /> Respondent
               Demographics
@@ -472,7 +501,7 @@ const clone = el.cloneNode(true) as HTMLElement;
             </div>
           </div>
         ) : (
-          <div className="mb-10 p-6 bg-[#f9fafb] rounded-xl shadow-md border border-gray-200 text-center text-gray-600">
+          <div className="mb-10 p-6 bg-[#f9fafb] rounded-xl text-center text-gray-600">
             No demographic data available yet.
           </div>
         )}
@@ -495,7 +524,7 @@ const clone = el.cloneNode(true) as HTMLElement;
       return (
         <div
           key={questionResult.questionId}
-          className="bg-white p-6 rounded-xl shadow-md border border-gray-200 break-inside-avoid"
+          className="bg-white p-6 rounded-xl break-inside-avoid mb-6"
         >
           <h4 className="text-xl font-semibold text-gray-800 mb-4">
             {index + 1}. {questionResult.questionText}
@@ -527,10 +556,10 @@ const clone = el.cloneNode(true) as HTMLElement;
                 return (
                   <div
                     key={rankGroup.position}
-                    className={`mb-6 p-5 rounded-xl border-2 ${
+                    className={`mb-6 p-5 rounded-xl ${
                       isFirst
-                        ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-400 shadow-xl"
-                        : "bg-gray-50 border-gray-300"
+                        ? "bg-gradient-to-r from-yellow-50 to-amber-50"
+                        : "bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-4">
@@ -553,8 +582,8 @@ const clone = el.cloneNode(true) as HTMLElement;
                           key={opt.id}
                           className={`flex justify-between items-center p-4 rounded-lg font-medium ${
                             idx === 0 && isFirst
-                              ? "bg-white border-2 border-amber-400 shadow-lg text-amber-800"
-                              : "bg-white/80 border border-gray-200"
+                              ? "bg-white text-amber-800"
+                              : "bg-white/80"
                           }`}
                         >
                           <span>
@@ -616,7 +645,7 @@ const clone = el.cloneNode(true) as HTMLElement;
 
           {/* OPEN-ENDED RESPONSES */}
           {questionResult.openEndedResponses?.length ? (
-            <div className="mt-6 p-5 bg-gray-50 rounded-lg border border-gray-300 max-h-80 overflow-y-auto">
+            <div className="mt-6 p-5 bg-gray-50 rounded-lg max-h-80 overflow-y-auto">
               <h5 className="font-bold text-gray-700 mb-3">Open-Ended Responses:</h5>
               <ul className="list-disc pl-6 space-y-2 text-gray-700">
                 {questionResult.openEndedResponses.map((resp, i) => (
@@ -630,7 +659,7 @@ const clone = el.cloneNode(true) as HTMLElement;
     })}
   </div>
 ) : (
-  <div className="mt-10 p-8 bg-[#eef2ff] rounded-xl shadow-md border border-indigo-200 text-center">
+  <div className="mt-10 p-8 bg-[#eef2ff] rounded-xl text-center">
     <MessageSquareText className="w-16 h-16 mx-auto mb-4 text-indigo-500" />
     <p className="text-xl text-indigo-700">
       No responses have been recorded for this poll yet.
