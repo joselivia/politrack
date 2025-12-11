@@ -726,23 +726,29 @@ const resetRankingToOriginal = () => {
                   )}
                   {q.type === "rating" && (
                     <div className="flex md:flex-row flex-wrap items-center gap-2">
-                      {[1, 2, 3, 4, 5].map((option) => (
+                      {[
+                        { value: 1, label: "Very Poor" },
+                        { value: 2, label: "Poor" },
+                        { value: 3, label: "Fair" },
+                        { value: 4, label: "Good" },
+                        { value: 5, label: "Excellent" },
+                      ].map((option) => (
                         <label
-                          key={option}
+                          key={option.value}
                           className="flex items-center gap-2 cursor-pointer px-3 py-1 border rounded-md hover:bg-gray-100 transition"
                         >
                           <input
                             type="radio"
                             name={`question-${q.id}`}
-                            value={option}
-                            checked={selections[q.id] === option}
+                            value={option.value}
+                            checked={selections[q.id] === option.value}
                             onChange={() =>
-                              handleDynamicQuestionSelectionChange(q.id, option)
+                              handleDynamicQuestionSelectionChange(q.id, option.value)
                             }
                             className="form-radio h-5 w-5 text-yellow-600"
                           />
                           <span className="ml-3 text-base text-gray-700">
-                            {option}
+                            {option.label}
                           </span>
                         </label>
                       ))}

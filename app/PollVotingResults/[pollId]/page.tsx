@@ -532,13 +532,61 @@ const clone = el.cloneNode(true) as HTMLElement;
 
           {/* RATING DISPLAY */}
           {questionResult.type === "rating" && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-lg font-semibold text-blue-700">
-                Average Rating:
-                <span className="text-2xl font-bold">
-                  {questionResult.averageRating?.toFixed(2) ?? "N/A"}
-                </span>
-              </p>
+            <div className="mt-4">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+                <p className="text-lg font-semibold text-blue-700">
+                  Average Rating:
+                  <span className="text-2xl font-bold ml-2">
+                    {questionResult.averageRating?.toFixed(2) ?? "N/A"} / 5.00
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Total Responses: {questionResult.totalResponses || 0}
+                </p>
+              </div>
+
+              {/* Pie Chart and Bar Graph for Rating */}
+              {normalizedChoices && normalizedChoices.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+                  <div className="chart-wrapper" style={{ width: "100%", height: 400 }}>
+                    <h5 className="text-lg font-semibold text-gray-700 mb-4">Rating Distribution (Pie Chart)</h5>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <PieChart>
+                        <Pie
+                          data={normalizedChoices}
+                          dataKey="count"
+                          nameKey="label"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          labelLine={false}
+                          label={renderCustomizedLabel}
+                        >
+                          {normalizedChoices.map((entry, idx) => (
+                            <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="chart-wrapper" style={{ width: "100%", height: 400 }}>
+                    <h5 className="text-lg font-semibold text-gray-700 mb-4">Rating Distribution (Bar Chart)</h5>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <RechartsBarChart data={normalizedChoices}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="label" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="count" fill="#8884d8" />
+                      </RechartsBarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

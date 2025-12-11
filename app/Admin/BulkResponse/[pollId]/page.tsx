@@ -674,22 +674,46 @@ const AdminBulkResponsePage = () => {
                 {/* RATING */}
                 {question.type === "rating" && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Enter all rating values (comma-separated, e.g., 1,3,5,4,2):
+                    <p className="text-sm text-gray-600 mb-3">
+                      Enter the number of people who selected each rating:
                     </p>
-                    <input
-                      type="text"
-                      value={(questionData.ratingValues || []).join(",")}
-                      onChange={(e) => {
-                        const values = e.target.value
-                          .split(",")
-                          .map((v) => parseInt(v.trim()))
-                          .filter((v) => !isNaN(v));
-                        updateBulkData(question.id, "ratingValues", values);
-                      }}
-                      placeholder="e.g., 1,3,5,4,2,5,3"
-                      className="w-full p-3 border border-gray-300 rounded-lg"
-                    />
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      {[
+                        { value: 1, label: "Very Poor" },
+                        { value: 2, label: "Poor" },
+                        { value: 3, label: "Fair" },
+                        { value: 4, label: "Good" },
+                        { value: 5, label: "Excellent" },
+                      ].map((rating) => (
+                        <div key={rating.value} className="flex flex-col">
+                          <label className="text-sm font-medium text-gray-700 mb-2">
+                            {rating.label} ({rating.value})
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={(questionData.optionCounts as any)?.[rating.value] || 0}
+                            onChange={(e) => {
+                              const count = parseInt(e.target.value) || 0;
+                              const newCounts = { ...(questionData.optionCounts || {}) };
+                              newCounts[rating.value] = count;
+                              updateBulkData(question.id, "optionCounts", newCounts);
+                            }}
+                            placeholder="0"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 p-2 bg-blue-50 rounded border border-blue-200">
+                      <p className="text-sm text-blue-800">
+                        <strong>Total responses:</strong>{" "}
+                        {Object.values((questionData.optionCounts as any) || {}).reduce(
+                          (sum: number, count: any) => sum + (parseInt(count) || 0),
+                          0
+                        )}
+                      </p>
+                    </div>
                   </div>
                 )}
 
