@@ -233,7 +233,24 @@ el.style.maxHeight = 'none';
 
 const clone = el.cloneNode(true) as HTMLElement;
 
- // Remove all borders and shadows for cleaner PDF
+      // Sync select values from original to clone
+      const originalSelects = el.querySelectorAll("select");
+      const cloneSelects = clone.querySelectorAll("select");
+      originalSelects.forEach((orig, idx) => {
+        const cloned = cloneSelects[idx];
+        if (cloned) {
+          cloned.value = orig.value;
+          Array.from(cloned.options).forEach((opt) => {
+            if (opt.value === orig.value) {
+              opt.setAttribute("selected", "selected");
+            } else {
+              opt.removeAttribute("selected");
+            }
+          });
+        }
+      });
+
+      // Remove all borders and shadows for cleaner PDF
  clone.style.border = 'none';
  clone.style.boxShadow = 'none';
 
@@ -445,6 +462,21 @@ const clone = el.cloneNode(true) as HTMLElement;
               <Users className="w-7 h-7 mr-3 text-gray-600" /> Respondent
               Demographics
             </h3>
+            
+            {/* Total Respondents Count */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+              <p className="text-lg font-semibold text-blue-700">
+                Total Respondents:
+                <span className="text-2xl font-bold ml-2 text-indigo-700">
+                  {demographics.totalRespondents}
+                </span>
+                <span className="text-sm text-gray-600 ml-3">
+                  (Male: {demographics.gender.find((g: any) => g.label.toLowerCase() === 'male')?.count || 0} | 
+                   Female: {demographics.gender.find((g: any) => g.label.toLowerCase() === 'female')?.count || 0})
+                </span>
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div
                 className="chart-wrapper"
@@ -647,7 +679,7 @@ const clone = el.cloneNode(true) as HTMLElement;
                 );
               })}
             </div>
-          ) : questionResult.type !== "ranking" && normalizedChoices && normalizedChoices.length > 0 ? (
+          ) : questionResult.type !== "ranking" && questionResult.type !== "rating" && normalizedChoices && normalizedChoices.length > 0 ? (
         
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
               <div className="chart-wrapper" style={{ width: "100%", height: 400 }}>
